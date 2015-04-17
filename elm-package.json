@@ -1,0 +1,14 @@
+{
+    "version": "1.0.0",
+    "summary": "LD32 entry by suppi",
+    "repository": "https://github.com/USER/PROJECT.git",
+    "license": "Apache 2.0",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-lang/core": "1.1.1 <= v < 2.0.0"
+       ,"jwmerrill/elm-animation-frame": "1.0.2 <= v < 2.0.0"
+    }
+}
