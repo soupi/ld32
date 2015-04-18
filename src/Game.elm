@@ -14,25 +14,54 @@ import AnimationFrame
 import Time
 import Window
 import Signal
+import Signal ((<~),(~))
 import Text
+import Keyboard
+import Char
+
+import Debug
+
+
+{-- Part 0: Signals -----------------------------------------------------------
+
+What information do you need to represent all relevant user input?
+
+------------------------------------------------------------------------------}
+
+
+main : Signal.Signal Element
+main =
+    Signal.map2 display Window.dimensions gameState
+
+
+gameState : Signal.Signal GameState
+gameState =
+    Signal.foldp stepGame defaultGame input
+
+
+input : Signal.Signal Input
+input =
+    Signal.sampleOn delta (Signal.map3 Input Window.dimensions delta userInput)
+
+
+delta : Signal.Signal Time.Time
+delta = AnimationFrame.frame
+
+
+userInput : Signal.Signal UserInput
+userInput = Signal.sampleOn delta <|
+            UserInput <~ Debug.watch "start"      Keyboard.enter
+                       ~ Debug.watch "select"     Keyboard.space
+                       ~ Debug.watch "actionA"   (Keyboard.isDown (Char.toCode 'z'))
+                       ~ Debug.watch "actionB"   (Keyboard.isDown (Char.toCode 'x'))
+                       ~ Debug.watch "direction"  Keyboard.arrows
 
 
 {-- Part 1: Model the user input ----------------------------------------------
 
 What information do you need to represent all relevant user input?
 
-Task: Redefine `UserInput` to include all of the information you need.
-      Redefine `userInput` to be a signal that correctly models the user
-      input as described by `UserInput`.
-
 ------------------------------------------------------------------------------}
-
-type alias UserInput = {}
-
-
-userInput : Signal UserInput
-userInput =
-    Signal.sampleOn delta <| Signal.constant {}
 
 
 type alias Input =
@@ -42,20 +71,19 @@ type alias Input =
     }
 
 
+type alias UserInput =
+  { start     : Bool
+  , select    : Bool
+  , actionA   : Bool
+  , actionB   : Bool
+  , direction : { x : Int, y : Int }
+  }
+
+
 
 {-- Part 2: Model the game ----------------------------------------------------
 
 What information do you need to represent the entire game?
-
-Tasks: Redefine `GameState` to represent your particular game.
-       Redefine `defaultGame` to represent your initial game state.
-
-For example, if you want to represent many objects that just have a position,
-your GameState might just be a list of coordinates and your default game might
-be an empty list (no objects at the start):
-
-    type GameState = { objects : [(Float,Float)] }
-    defaultGame = { objects = [] }
 
 ------------------------------------------------------------------------------}
 
@@ -71,10 +99,6 @@ defaultGame =
 
 How does the game step from one state to another based on user input?
 
-Task: redefine `stepGame` to use the UserInput and GameState
-      you defined in parts 1 and 2. Maybe use some helper functions
-      to break up the work, stepping smaller parts of the game.
-
 ------------------------------------------------------------------------------}
 
 stepGame : Input -> GameState -> GameState
@@ -87,37 +111,10 @@ stepGame {dimensions,userInput} gameState =
 
 How should the GameState be displayed to the user?
 
-Task: redefine `display` to use the GameState you defined in part 2.
-
 ------------------------------------------------------------------------------}
 
 display : (Int,Int) -> GameState -> Element
 display (w,h) gameState =
     --show gameState
     Text.asText gameState
-
-
-
-{-- That's all folks! ---------------------------------------------------------
-
-The following code puts it all together and shows it on screen.
-
-------------------------------------------------------------------------------}
-
-delta : Signal Time.Time
-delta = AnimationFrame.frame
-
-input : Signal Input
-input =
-    Signal.sampleOn delta (Signal.map3 Input Window.dimensions delta userInput)
-
-
-gameState : Signal GameState
-gameState =
-    Signal.foldp stepGame defaultGame input
-
-
-main : Signal Element
-main =
-    Signal.map2 display Window.dimensions gameState
 
