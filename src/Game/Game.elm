@@ -7,8 +7,9 @@
 -}
 
 
-module Game where
+module Game.Game where
 
+-- Packages
 import Graphics.Element (..)
 import AnimationFrame
 import Time
@@ -19,6 +20,11 @@ import Text
 import Keyboard
 import Char
 
+-- Game
+import Game.Input  as Input
+import Game.Player as Player
+
+-- Debug
 import Debug
 
 
@@ -36,48 +42,7 @@ main =
 
 gameState : Signal.Signal GameState
 gameState =
-    Signal.foldp stepGame defaultGame input
-
-
-input : Signal.Signal Input
-input =
-    Signal.sampleOn delta (Signal.map3 Input Window.dimensions delta userInput)
-
-
-delta : Signal.Signal Time.Time
-delta = AnimationFrame.frame
-
-
-userInput : Signal.Signal UserInput
-userInput = Signal.sampleOn delta <|
-            UserInput <~ Debug.watch "start"      Keyboard.enter
-                       ~ Debug.watch "select"     Keyboard.space
-                       ~ Debug.watch "actionA"   (Keyboard.isDown (Char.toCode 'z'))
-                       ~ Debug.watch "actionB"   (Keyboard.isDown (Char.toCode 'x'))
-                       ~ Debug.watch "direction"  Keyboard.arrows
-
-
-{-- Part 1: Model the user input ----------------------------------------------
-
-What information do you need to represent all relevant user input?
-
-------------------------------------------------------------------------------}
-
-
-type alias Input =
-    { dimensions : (Int,Int)
-    , time : Time.Time
-    , userInput : UserInput
-    }
-
-
-type alias UserInput =
-  { start     : Bool
-  , select    : Bool
-  , actionA   : Bool
-  , actionB   : Bool
-  , direction : { x : Int, y : Int }
-  }
+    Signal.foldp stepGame defaultGame Input.input
 
 
 
@@ -87,11 +52,10 @@ What information do you need to represent the entire game?
 
 ------------------------------------------------------------------------------}
 
-type alias GameState = {}
+type alias GameState = { player : Player.Player }
 
 defaultGame : GameState
-defaultGame =
-    {}
+defaultGame = { player = Player.defaultPlayer }
 
 
 
@@ -101,9 +65,12 @@ How does the game step from one state to another based on user input?
 
 ------------------------------------------------------------------------------}
 
-stepGame : Input -> GameState -> GameState
-stepGame {dimensions,userInput} gameState =
-    gameState
+stepGame : Input.Input -> GameState -> GameState
+stepGame ({dimensions,time,userInput} as input) gameState =
+    let act        = Player.getAction input gameState.player
+        new_player = if True {- act /= Player.PickUpBanana -} then Player.act time act gameState.player else gameState.player
+    in
+       { gameState | player <- new_player }
 
 
 
