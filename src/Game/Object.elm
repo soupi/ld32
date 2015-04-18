@@ -11,13 +11,10 @@ module Game.Object where
 
 -- Packages
 import Graphics.Element (..)
-import Time
-import Text
-import Keyboard
-import Char
 
 -- Game
 import Game.Input as Input
+import Game.Utils as Utils
 import Game.Utils (changeIf)
 
 -- Debug
@@ -56,7 +53,7 @@ addVelocity accel limit dir vel =
 
 move : MovingObject a -> MovingObject a
 move ({x,y,vx,vy} as obj) =
-  Debug.watch "After fric " <| applyFriction <| Debug.watch "before fric" <|
+  applyFriction <|
       { obj | x <- x + vx
             , y <- y + vy }
 
@@ -80,3 +77,12 @@ friction vel =
 frictionConst : Float
 frictionConst = 1
 
+
+{-- Utils --------------------------------------------------------------------
+
+How do we update the model?
+
+------------------------------------------------------------------------------}
+
+unscale : Object a -> (Int, Int)
+unscale {x,y} = (Utils.unscale x, Utils.unscale y)

@@ -11,18 +11,17 @@ module Game.Game where
 
 -- Packages
 import Graphics.Element (..)
-import AnimationFrame
-import Time
+import Graphics.Collage (collage)
 import Window
 import Signal
-import Signal ((<~),(~))
 import Text
-import Keyboard
-import Char
 
 -- Game
-import Game.Input  as Input
-import Game.Player as Player
+import Game.Input    as Input
+import Game.Player   as Player
+import Game.WorldMap as WorldMap
+import Game.Object   as Object
+import Game.Utils    as Utils
 
 -- Debug
 import Debug
@@ -52,10 +51,15 @@ What information do you need to represent the entire game?
 
 ------------------------------------------------------------------------------}
 
-type alias GameState = { player : Player.Player }
+type alias GameState =
+  { player : Player.Player
+  , map    : WorldMap.WorldMap
+  }
 
 defaultGame : GameState
-defaultGame = { player = Player.defaultPlayer }
+defaultGame =
+  { player = Player.defaultPlayer
+  , map    = WorldMap.create 20 20 }
 
 
 
@@ -69,8 +73,9 @@ stepGame : Input.Input -> GameState -> GameState
 stepGame ({dimensions,time,userInput} as input) gameState =
     let act        = Player.getAction input gameState.player
         new_player = if True {- act /= Player.PickUpBanana -} then Player.act time act gameState.player else gameState.player
+        valid_new_player = if WorldMap.isValidStep (Object.unscale new_player) gameState.map then new_player else Object.stop gameState.player
     in
-       { gameState | player <- new_player }
+       { gameState | player <- valid_new_player }
 
 
 
@@ -83,5 +88,5 @@ How should the GameState be displayed to the user?
 display : (Int,Int) -> GameState -> Element
 display (w,h) gameState =
     --show gameState
-    Text.asText gameState
+    uncurry collage (WorldMap.size gameState.map) [WorldMap.display gameState.map] -- need to scale map
 

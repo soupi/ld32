@@ -10,5 +10,6 @@
     "dependencies": {
         "elm-lang/core": "1.1.1 <= v < 2.0.0"
        ,"jwmerrill/elm-animation-frame": "1.0.2 <= v < 2.0.0"
+       ,"jheiling/elm-Array2D": "1.0.0 <= v < 2.0.0"
     }
 }
