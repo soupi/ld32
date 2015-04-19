@@ -44,6 +44,9 @@ How do we update the model?
 
 ------------------------------------------------------------------------------}
 
+getPos : Object a -> Utils.Point
+getPos {x,y} = {x=x,y=y}
+
 addVelocity : Float -> Float -> Int -> Float -> Float
 addVelocity accel limit dir vel =
   if | dir < 0  -> if vel - accel < limit then limit - frictionConst else vel - accel
@@ -84,5 +87,15 @@ How do we update the model?
 
 ------------------------------------------------------------------------------}
 
-unscale : Object a -> (Int, Int)
-unscale {x,y} = (Utils.unscale x, Utils.unscale y)
+checkBounds : (Utils.Point -> Bool) -> Object a -> Bool
+checkBounds test obj =
+  let
+      bounds = Utils.squareBounds <| getPos obj
+  in
+     Utils.and <|
+       [test bounds.upperLeft
+       ,test bounds.upperRight
+       ,test bounds.lowerLeft
+       ,test bounds.lowerRight]
+
+

@@ -64,8 +64,8 @@ emptyColFromTo col r1 r2 map =
                      Just True  -> Just False
                      Just False -> emptyColFromTo col (r1 + 1) r2 map
 
-isValidStep : (Int, Int) -> WorldMap -> Bool
-isValidStep (x,y) map = Maybe.withDefault False <| Maybe.map not <| get x y map
+isValidStep : WorldMap -> (Int, Int) -> Bool
+isValidStep map (x,y) = Maybe.withDefault False <| Maybe.map not <| get x y map
 
 size : WorldMap -> (Int, Int)
 size map = if Array2D.length map == 0 then (0, 0)

@@ -25,6 +25,8 @@ import Game.WorldMap as WorldMap
 import Game.Object   as Object
 import Game.Utils    as Utils
 
+import Game.Player (defaultPlayer)
+
 -- Debug
 import Debug
 
@@ -60,7 +62,7 @@ type alias GameState =
 
 defaultGame : GameState
 defaultGame =
-  { player = Player.defaultPlayer
+  { player = ({ defaultPlayer | x <- Utils.scale 5, y <- Utils.scale 5 })
   , map    = WorldMap.create 20 20 }
 
 
@@ -75,9 +77,10 @@ stepGame : Input.Input -> GameState -> GameState
 stepGame ({dimensions,time,userInput} as input) gameState =
     let act        = Player.getAction input gameState.player
         new_player = if True {- act /= Player.PickUpBanana -} then Player.act time act gameState.player else gameState.player
-        valid_new_player = if WorldMap.isValidStep (Object.unscale new_player) gameState.map then new_player else Object.stop gameState.player
+        valid_new_player = if Object.checkBounds (WorldMap.isValidStep gameState.map << Utils.unscaleP) new_player then new_player else Object.stop gameState.player
     in
        { gameState | player <- valid_new_player }
+
 
 
 
@@ -89,10 +92,10 @@ How should the GameState be displayed to the user?
 
 display : (Int,Int) -> GameState -> Element
 display (w,h) gameState =
-  let size                    = Utils.apply2 truncate <| WorldMap.scaledSize gameState.map
-      (halfWidth, halfHeight) = Utils.apply2 ((/) 2) <| WorldMap.scaledSize gameState.map
+  let size     = Utils.apply2 truncate <| WorldMap.scaledSize gameState.map
+      halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.map
   in
-      uncurry collage size <|
-        List.map (Collage.move -halfWidth -halfHeight)
-        [Collage.move WorldMap.display gameState.map
-        ,Player.display gameState.player]
+     container w h middle <|
+        uncurry collage size <|
+          [WorldMap.display gameState.map
+          ,Collage.move halfSize <| Player.display gameState.player]
