@@ -13,6 +13,7 @@ module Game.Game where
 import Graphics.Element (..)
 import Graphics.Collage (collage, toForm)
 import Graphics.Collage as Collage
+import Color
 import Window
 import Signal
 import Text
@@ -123,5 +124,13 @@ display (w,h) gameState =
      container w h middle <|
         uncurry collage size <|
           [WorldMap.display gameState.map
-          ,toForm <| Text.asText gameState.banana
+          ,Collage.move halfSize <| displayBanana gameState.banana
           ,Collage.move halfSize <| Debug.trace "player1" <| Player.display gameState.player]
+
+displayBanana : Banana -> Collage.Form
+displayBanana banana = case banana of
+  Nothing    -> toForm <| Text.asText "you have the banana"
+  Just {x,y} ->
+    Collage.move (x,y) <|
+      Collage.filled Color.yellow <|
+        Collage.rect Utils.squareSize Utils.squareSize
