@@ -93,6 +93,6 @@ display (w,h) gameState =
       (halfWidth, halfHeight) = Utils.apply2 ((/) 2) <| WorldMap.scaledSize gameState.map
   in
       uncurry collage size <|
-        List.map (Collage.move halfWidth halfHeight)
+        List.map (Collage.move -halfWidth -halfHeight)
         [Collage.move WorldMap.display gameState.map
         ,Player.display gameState.player]
