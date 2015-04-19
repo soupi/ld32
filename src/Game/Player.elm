@@ -80,7 +80,6 @@ isPickingUpBanana player = case player.state of
   Acting PickingUpBanana _ -> True
   _ -> False
 
-
 isDroppingBanana player = case player.state of
   Acting DroppingBanana _ -> True
   _ -> False

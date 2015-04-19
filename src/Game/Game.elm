@@ -67,7 +67,7 @@ type alias GameState =
 defaultGame : GameState
 defaultGame =
   { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
-  , banana = Just <| {x=4,y=3}
+  , banana = Nothing
   , map    = WorldMap.create 20 20 }
 
 
@@ -80,10 +80,10 @@ How does the game step from one state to another based on user input?
 
 stepGame : Input.Input -> GameState -> GameState
 stepGame ({dimensions,time,userInput} as input) gameState =
-    let act        = Player.getAction input gameState.player
-        new_player = Player.act time act gameState.player
+    let action     = Player.getAction input gameState.player
+        new_player = Player.act time action gameState.player
         valid_new_player = if Object.checkBounds (WorldMap.isValidStep gameState.map << Utils.unscaleP) new_player then new_player else Object.stop gameState.player
-        (p1, banana)     = case bananaLogic (Debug.watch "banana" banana) valid_new_player of
+        (p1, banana)     = case bananaLogic (Debug.watch "banana" gameState.banana) valid_new_player action of
                 Nothing -> (gameState.player, gameState.banana)
                 Just b  -> (valid_new_player, b)
     in
@@ -93,8 +93,8 @@ stepGame ({dimensions,time,userInput} as input) gameState =
 
 -- Nothing: move is invalid
 -- Just banana: move is valid - new state for banana
-bananaLogic : Banana -> Player.Player -> Maybe Banana
-bananaLogic banana player =
+bananaLogic : Banana -> Player.Player -> Player.Action -> Maybe Banana
+bananaLogic banana player action =
   let
       dropping = case banana of
                     Nothing -> Just <| Just {x=player.x, y=player.y}
@@ -103,9 +103,10 @@ bananaLogic banana player =
             Nothing -> Nothing
             Just b  -> if Object.isOverlapping player b then Just Nothing else Nothing
   in
-      if  | Player.isDroppingBanana player -> dropping
-          | Player.isPickingUpBanana player -> picking
-          | otherwise -> Just banana
+      case action of
+        Player.PickUpBanana -> picking
+        Player.DropBanana   -> dropping
+        _ -> Just banana
 
 
 {-- Part 4: Display the game --------------------------------------------------
