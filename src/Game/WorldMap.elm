@@ -82,5 +82,5 @@ How do we display the map?
 ------------------------------------------------------------------------------}
 
 display map =
-  filled Color.black <|
+  filled Color.blue <|
   uncurry rect <| Utils.apply2 Utils.scale <| size map

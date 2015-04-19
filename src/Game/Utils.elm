@@ -6,7 +6,34 @@ changeIf test def x = if test x then def else x
 
 squareSize = 32
 
+
+apply2 : (a -> b) -> (a, a) -> (b, b)
+apply2 f (x,y) = (f x, f y)
+
+and : List Bool -> Bool
+and list = case list of
+  []         -> True
+  False::_   -> False
+  True::rest -> and rest
+
 type alias Point = {x:Float,y:Float}
+
+scale : Int -> Float
+scale = (*) squareSize << toFloat
+
+scaleF : Float -> Float
+scaleF = (*) squareSize
+
+unscale : Float -> Int
+unscale x = if | x < 0     -> round (x - squareSize) // squareSize
+               | otherwise -> round x // squareSize
+
+
+lessThan : Point -> Point -> Bool
+lessThan p1 p2 = p1.x <= p2.x && p1.y <= p2.y
+
+unscaleP : Point -> (Int, Int)
+unscaleP {x,y} = (unscale x, unscale y)
 
 type alias Bounds = { upperLeft  : Point
                     , upperRight : Point
@@ -29,25 +56,4 @@ bounds w h center =
 squareBounds : Point -> Bounds
 squareBounds = bounds squareSize squareSize
 
-scale : Int -> Float
-scale = (*) squareSize << toFloat
 
-scaleF : Float -> Float
-scaleF = (*) squareSize
-
-unscale : Float -> Int
-unscale x = if | x < 0     -> round (x - squareSize) // squareSize
-               | otherwise -> round x // squareSize
-
-
-unscaleP : Point -> (Int, Int)
-unscaleP {x,y} = (unscale x, unscale y)
-
-apply2 : (a -> b) -> (a, a) -> (b, b)
-apply2 f (x,y) = (f x, f y)
-
-and : List Bool -> Bool
-and list = case list of
-  []         -> True
-  False::_   -> False
-  True::rest -> and rest

@@ -98,4 +98,10 @@ checkBounds test obj =
        ,test bounds.lowerLeft
        ,test bounds.lowerRight]
 
-
+isOverlapping : Object a -> Object b -> Bool
+isOverlapping obj1 obj2 =
+  let
+      bounds = Utils.squareBounds <| getPos obj1
+  in
+      getPos obj2 `Utils.lessThan` bounds.upperRight
+      && bounds.lowerLeft `Utils.lessThan` getPos obj2

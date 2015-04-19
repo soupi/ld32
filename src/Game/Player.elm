@@ -38,7 +38,7 @@ type Action = Walk (Int,Int)
             | PickUpBanana
             | Wait
 
-type Act = Banana | Caught | Dying
+type Act = DroppingBanana | PickingUpBanana | Caught | Dying
 
 type PlayerState = Walking (Int,Int)
                  | Acting Act Float
@@ -72,10 +72,18 @@ act time action player =
       Walking _  -> { player | state <- Dead }  -- invariant. Shouldn't happen.
       Dead       ->   player
       Acting a v -> { player | state <- Acting a (v-time) }
-    DropBanana     -> Object.stop { player | state <- Acting Banana (Time.second * 1), hasBanana <- False }
-    PickUpBanana   -> Object.stop { player | state <- Acting Banana (Time.second * 2), hasBanana <- True  }
+    DropBanana     -> Object.stop { player | state <- Acting DroppingBanana  (Time.second * 1), hasBanana <- False }
+    PickUpBanana   -> Object.stop { player | state <- Acting PickingUpBanana (Time.second * 2), hasBanana <- True  }
     Walk direction -> walk direction player
 
+isPickingUpBanana player = case player.state of
+  Acting PickingUpBanana _ -> True
+  _ -> False
+
+
+isDroppingBanana player = case player.state of
+  Acting DroppingBanana _ -> True
+  _ -> False
 
 walk : (Int,Int) -> Player -> Player
 walk (dx,dy) player = Object.move <|
