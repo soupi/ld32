@@ -11,12 +11,16 @@ module Game.Player where
 
 -- Packages
 import Graphics.Element
+import Graphics.Collage as Collage
+import Graphics.Collage (rect, filled, outlined)
+import Color
 import Time
 import Text
 
 -- Game
 import Game.Object as Object
 import Game.Input  as Input
+import Game.Utils  as Utils
 
 -- Debug
 import Debug
@@ -96,8 +100,7 @@ How should the player be displayed to the user?
 
 ------------------------------------------------------------------------------}
 
-display : (Int,Int) -> Player -> Graphics.Element.Element
-display (w,h) player =
-    --show player
-    Text.asText player.state
-
+display player =
+  Collage.move (player.x,player.y) <|
+  filled Color.white <|
+  uncurry rect <| Utils.apply2 ((*) Utils.squareSize) (1,1)

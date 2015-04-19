@@ -12,8 +12,8 @@ module Game.WorldMap where
 -- Core Packages
 import Graphics.Element (..)
 import Graphics.Collage (rect, filled, outlined)
-import Maybe
 import Color
+import Maybe
 
 -- Packages
 import Array2D
@@ -70,6 +70,11 @@ isValidStep (x,y) map = Maybe.withDefault False <| Maybe.map not <| get x y map
 size : WorldMap -> (Int, Int)
 size map = if Array2D.length map == 0 then (0, 0)
                                       else (Array2D.length1 map, Array2D.length map // Array2D.length1 map)
+
+scaledSize : WorldMap -> (Float, Float)
+scaledSize map = (Utils.apply2 Utils.scale (size map))
+
+
 {-- View ---------------------------------------------------------------------
 
 How do we display the map?

@@ -11,10 +11,12 @@ module Game.Game where
 
 -- Packages
 import Graphics.Element (..)
-import Graphics.Collage (collage)
+import Graphics.Collage (collage, toForm)
+import Graphics.Collage as Collage
 import Window
 import Signal
 import Text
+import List
 
 -- Game
 import Game.Input    as Input
@@ -87,6 +89,10 @@ How should the GameState be displayed to the user?
 
 display : (Int,Int) -> GameState -> Element
 display (w,h) gameState =
-    --show gameState
-    uncurry collage (WorldMap.size gameState.map) [WorldMap.display gameState.map] -- need to scale map
-
+  let size                    = Utils.apply2 truncate <| WorldMap.scaledSize gameState.map
+      (halfWidth, halfHeight) = Utils.apply2 ((/) 2) <| WorldMap.scaledSize gameState.map
+  in
+      uncurry collage size <|
+        List.map (Collage.move halfWidth halfHeight)
+        [Collage.move WorldMap.display gameState.map
+        ,Player.display gameState.player]
