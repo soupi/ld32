@@ -10,7 +10,7 @@
 module Game.Banana where
 
 -- Packages
-import Graphics.Element (..)
+import Graphics.Element as Element
 import Graphics.Collage as Collage
 import Color
 import Text
@@ -66,5 +66,5 @@ display banana = case banana of
   Nothing    -> Collage.move (120,20) <| Collage.toForm <| Text.asText "you have the banana"
   Just {x,y} ->
     Collage.move (x,y) <|
-      Collage.filled Color.yellow <|
-        Collage.rect Utils.squareSize Utils.squareSize
+      Collage.toForm <|
+        Element.image (truncate <| Utils.squareSize / 1.5) (truncate <| Utils.squareSize / 1.5)  "../../assets/imgs/banana.gif"

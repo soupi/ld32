@@ -4,7 +4,7 @@ changeIf : (a -> Bool) -> a -> a -> a
 changeIf test def x = if test x then def else x
 
 
-squareSize = 32
+squareSize = 48
 
 
 apply2 : (a -> b) -> (a, a) -> (b, b)

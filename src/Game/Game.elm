@@ -78,9 +78,9 @@ defaultGame =
   { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
   , banana = Nothing
   , guards = [defaultGuard (Utils.scale 6, Utils.scale 7) 5]
-  , goal   = { x = 16, y = 16 }
+  , goal   = { x = (Utils.squareSize / 2), y = (Utils.squareSize / 2) }
   , status = Ongoing
-  , map    = WorldMap.create 20 20 }
+  , map    = WorldMap.create 20 15 }
 
 
 

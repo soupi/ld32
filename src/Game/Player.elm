@@ -10,7 +10,7 @@
 module Game.Player where
 
 -- Packages
-import Graphics.Element
+import Graphics.Element as Element
 import Graphics.Collage as Collage
 import Graphics.Collage (rect, filled, outlined)
 import Color
@@ -99,7 +99,29 @@ How should the player be displayed to the user?
 
 ------------------------------------------------------------------------------}
 
+
 display player =
-  Collage.move (player.x,player.y) <|
-  filled Color.white <|
-  uncurry rect <| Utils.apply2 ((*) Utils.squareSize) (1,1)
+  let action = getActionVerb player
+  in
+      Collage.move (player.x,player.y) <|
+        Collage.toForm <|
+          uncurry Element.image (Utils.apply2 ((*) Utils.squareSize) (1,1)) <|
+            "../../assets/imgs/bandit-" ++ action ++ ".png"
+
+
+
+getActionVerb : Player -> String
+getActionVerb player =
+    case player.state of
+      Walking (x,y) ->
+        if | y > 0 -> "up"
+           | y < 0 -> "down"
+           | x > 0 -> "right"
+           | x < 0 -> "left"
+           | otherwise -> "down"
+      Acting DroppingBanana _  -> "up"
+      Acting PickingUpBanana _ -> "up"
+      Acting Caught _ -> "left"
+      Acting Dying _ -> "right"
+      Dead -> "up"
+
