@@ -84,21 +84,13 @@ isDroppingBanana player = case player.state of
   Acting DroppingBanana _ -> True
   _ -> False
 
+
 walk : (Int,Int) -> Player -> Player
-walk (dx,dy) player = Object.move <|
-    { player | state <- Walking (dx,dy)
-    , vx    <- addV dx player.vx
-    , vy    <- addV dy player.vy }
-
-
-addV : Int -> Float -> Float
-addV dir vel =
+walk ((dx,dy) as dir) player =
   let
-      limit = if | dir == 0 ->   0
-                 | dir  > 0 ->  10
-                 | dir  < 0 -> -10
+      newPlayer = Object.walk dir player
   in
-      Object.addVelocity 1.2 limit dir vel
+    { newPlayer | state <- Walking (dx,dy) }
 
 
 {-- Part 4: Display the player -----------------------------------------------

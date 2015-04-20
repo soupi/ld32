@@ -12,7 +12,6 @@ import Time
 import Window
 import Signal
 import Signal ((<~),(~))
-import Text
 import Keyboard
 import Char
 
@@ -53,8 +52,8 @@ What information do you need to represent all relevant user input?
 
 type alias Input =
     { dimensions : (Int,Int)
-    , time : Time.Time
-    , userInput : UserInput
+    , time       : Time.Time
+    , userInput  : UserInput
     }
 
 

@@ -80,6 +80,23 @@ friction vel =
 frictionConst : Float
 frictionConst = 1
 
+walk : (Int,Int) -> MovingObject a -> MovingObject a
+walk (dx,dy) obj = move <|
+    { obj | vx    <- addV dx obj.vx
+          , vy    <- addV dy obj.vy }
+
+
+addV : Int -> Float -> Float
+addV dir vel =
+  let
+      limit = if | dir == 0 ->   0
+                 | dir  > 0 ->  10
+                 | dir  < 0 -> -10
+  in
+      addVelocity 1.2 limit dir vel
+
+
+
 
 {-- Utils --------------------------------------------------------------------
 
