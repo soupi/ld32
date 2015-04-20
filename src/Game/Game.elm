@@ -71,16 +71,20 @@ type alias GameState =
   , goal   : Goal
   , status : Status
   , map    : WorldMap.WorldMap
+  , form   : Collage.Form
   }
 
 defaultGame : GameState
 defaultGame =
-  { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
-  , banana = Nothing
-  , guards = [defaultGuard (Utils.scale 6, Utils.scale 7) 5]
-  , goal   = { x = (Utils.squareSize / 2), y = (Utils.squareSize / 2) }
-  , status = Ongoing
-  , map    = WorldMap.create 20 15 }
+  let (map, form) = WorldMap.create 20 15 5
+  in
+    { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
+    , banana = Nothing
+    , guards = [defaultGuard (Utils.scale 6, Utils.scale 7) 5]
+    , goal   = { x = (Utils.squareSize / 2), y = (Utils.squareSize / 2) }
+    , status = Ongoing
+    , map    = map
+    , form   = form }
 
 
 
@@ -159,7 +163,7 @@ display (w,h) gameState =
      container w h middle <|
 
         uncurry collage size <|
-          [WorldMap.display gameState.map
+          [WorldMap.display gameState.map gameState.form
           ,Collage.move halfSize <| Banana.display gameState.banana
           ,Collage.move halfSize <| Debug.trace "player1" <| Player.display gameState.player]
           `List.append`

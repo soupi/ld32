@@ -10,8 +10,9 @@
 module Game.WorldMap where
 
 -- Core Packages
-import Graphics.Element (..)
-import Graphics.Collage (rect, filled, outlined)
+import Graphics.Element as Element
+import Graphics.Collage as Collage
+import Random
 import Color
 import Maybe
 
@@ -41,8 +42,51 @@ How do we use the model?
 
 ------------------------------------------------------------------------------}
 
-create : Int -> Int -> WorldMap
-create w h = Array2D.repeat w h False
+create : Int -> Int -> Int -> (WorldMap, Collage.Form)
+create w h seed =
+  let (map,_)  = createMaze (0,w) (0, h) (Random.initialSeed seed) (Array2D.repeat w h False)
+      form     = worldMapForm map
+  in
+     (map, form)
+
+
+
+createMaze : (Int, Int) -> (Int, Int) -> Random.Seed -> WorldMap -> (WorldMap, Random.Seed)
+createMaze (lw',hw') (lh',hh') seed map =
+  let (lw,hw,lh,hh) = (lw' + 1, hw' - 1, lh' + 1, hh' - 1)
+      _ = Debug.log "values" (lw,hw,lh,hh)
+  in
+  if (lw + 1) >= (hw - 1) || (lh + 1) >= (hh - 1)
+  then Debug.log "end" (map, seed)
+  else
+    let (col,seed')     = Debug.log "col" Random.generate (Random.int lw hw) seed
+        (row,seed'')    = Debug.log "row" Random.generate (Random.int lh hh) seed'
+        (cdiv,seed''')  = Random.generate (Random.int lh hh) seed''
+        (rdiv,seed'''') = Random.generate (Random.int lw hw) seed'''
+        divRow          = fillRowWithWallExcept row lh hh rdiv map
+        dividedMaze     = fillColWithWallExcept col lw hw cdiv divRow
+        (maze1,s1) = createMaze (lw, col - 1) (lh, row - 1) seed'''' dividedMaze
+        (maze2,s2) = createMaze (lw, col - 1) (row + 1, hh) s1 maze1
+        (maze3,s3) = createMaze (col + 1, hw) (lh, row - 1) s2 maze2
+        maze       = createMaze (col + 1, hw) (row + 1, hh) s3 maze3
+    in
+       maze
+
+
+fillRowWithWallExcept : Int -> Int -> Int -> Int -> WorldMap -> WorldMap
+fillRowWithWallExcept row c1 c2 except map =
+  if | c1 > c2      -> map
+     | c1 == except -> fillRowWithWallExcept row (c1+1) c2 except map
+     | otherwise    -> fillRowWithWallExcept row (c1+1) c2 except <|
+                    Array2D.set row c1 True map
+
+fillColWithWallExcept : Int -> Int -> Int -> Int -> WorldMap -> WorldMap
+fillColWithWallExcept col r1 r2 except map =
+  if | r1 > r2      -> map
+     | r1 == except -> fillRowWithWallExcept col (r1+1) r2 except map
+     | otherwise    -> fillRowWithWallExcept col (r1+1) r2 except <|
+                    Array2D.set r1 col True map
+
 
 get : Int -> Int -> WorldMap -> Maybe Bool
 get = Array2D.get
@@ -79,15 +123,10 @@ size map = if Array2D.length map == 0 then (0, 0)
 scaledSize : WorldMap -> (Float, Float)
 scaledSize map = (Utils.apply2 Utils.scale (size map))
 
-closestValidPoint {x,y} map =
-  let newX = if | x + (Utils.squareSize/2) >= fst (scaledSize map) -> (fst (scaledSize map)) - Utils.squareSize - 1
-                | x - (Utils.squareSize/2) <= 0 -> (Utils.squareSize/2) + 1
-                | otherwise -> x + (Utils.squareSize/2)
-      newY = if | y - (Utils.squareSize/2) >= snd (scaledSize map) -> (snd (scaledSize map)) - Utils.squareSize - 1
-                | y + (Utils.squareSize/2) <= 0 -> (Utils.squareSize/2) + 1
-                | otherwise -> y + (Utils.squareSize/2)
-  in (newX, newY)
 
+worldMapForm map = Collage.toForm <|
+  uncurry Collage.collage (Utils.apply2 truncate <| scaledSize map) <|
+  Array2D.toList (Array2D.indexedMap (wallOrEmpty (Utils.apply2 (flip (/) 2) <| scaledSize map)) map)
 
 
 
@@ -97,6 +136,15 @@ How do we display the map?
 
 ------------------------------------------------------------------------------}
 
-display map =
-  filled Color.blue <|
-  uncurry rect <| Utils.apply2 Utils.scale <| size map
+display map form =
+  Collage.toForm <| uncurry Collage.collage (Utils.apply2 truncate <| scaledSize map) <|
+  [Collage.filled (Color.rgb 74 85 86) <| uncurry Collage.rect <| scaledSize map]
+    ++ [form]
+
+wallOrEmpty : (Float, Float) -> Int -> Int -> Bool -> Collage.Form
+wallOrEmpty (halfSizeW,halfSizeH) x y square = case square of
+  False -> Collage.toForm Element.empty
+  True  -> Collage.move (toFloat x * Utils.squareSize - halfSizeW + (Utils.squareSize/2), toFloat y * Utils.squareSize - halfSizeH + (Utils.squareSize/2)) <|
+    Collage.toForm <|
+      uncurry Element.image (Utils.apply2 ((*) Utils.squareSize) (1,1)) <|
+        "../../assets/imgs/wall.png"

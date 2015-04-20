@@ -57,6 +57,6 @@ bounds w h center =
      , lowerRight = lowerRight }
 
 squareBounds : Point -> Bounds
-squareBounds = bounds squareSize squareSize
+squareBounds = bounds (squareSize-4) (squareSize-4)
 
 
