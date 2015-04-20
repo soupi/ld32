@@ -10,8 +10,7 @@
 module Game.Game where
 
 -- Packages
-import Graphics.Element (..)
-import Graphics.Collage (collage, toForm)
+import Graphics.Element as Element
 import Graphics.Collage as Collage
 import Color
 import Window
@@ -43,7 +42,7 @@ What information do you need to represent all relevant user input?
 ------------------------------------------------------------------------------}
 
 
-main : Signal.Signal Element
+main : Signal.Signal Element.Element
 main =
     Signal.map2 display Window.dimensions gameState
 
@@ -76,16 +75,21 @@ type alias GameState =
 
 defaultGame : GameState
 defaultGame =
-  let (map, form) = WorldMap.create 20 15 5
+  let (map, form) = WorldMap.create 20 15 9
   in
-    { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
+    { player = ({ defaultPlayer | x <- Utils.scale 1, y <- Utils.scale 1 })
     , banana = Nothing
-    , guards = [defaultGuard (Utils.scale 6, Utils.scale 7) 5]
-    , goal   = { x = (Utils.squareSize / 2), y = (Utils.squareSize / 2) }
+    , guards = defaultGuards
+    , goal   = { x = 19 * Utils.squareSize, y = 3 * (Utils.squareSize / 2) }
     , status = Ongoing
     , map    = map
     , form   = form }
 
+defaultGuards =
+  [defaultGuard (Utils.scale 6, Utils.scale 5) 5
+  ,defaultGuard (Utils.scale 14, Utils.scale 9) 10
+  ,defaultGuard (Utils.scale 9, Utils.scale 12) 8
+  ]
 
 
 {-- Part 3: Update the game ---------------------------------------------------
@@ -113,7 +117,7 @@ stepGame input gameState =
 
 collideGuardsPlayer : List Guard.Guard -> Player.Player -> Player.Player
 collideGuardsPlayer guards player =
-  if Utils.and <| List.map (Object.isOverlapping player) guards
+  if Utils.or <| List.map (\guard -> (not (Guard.isTripping guard)) && Object.isOverlapping player guard) guards
      then Player.die player
      else player
 
@@ -155,15 +159,16 @@ How should the GameState be displayed to the user?
 
 ------------------------------------------------------------------------------}
 
-display : (Int,Int) -> GameState -> Element
+display : (Int,Int) -> GameState -> Element.Element
 display (w,h) gameState =
   let size     = Utils.apply2 truncate <| WorldMap.scaledSize gameState.map
       halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.map
   in
-     container w h middle <|
+     Element.container w h Element.middle <|
 
-        uncurry collage size <|
+        uncurry Collage.collage size <|
           [WorldMap.display gameState.map gameState.form
+          ,Collage.move halfSize <| displayGoal gameState.goal
           ,Collage.move halfSize <| Banana.display gameState.banana
           ,Collage.move halfSize <| Debug.trace "player1" <| Player.display gameState.player]
           `List.append`
@@ -172,5 +177,13 @@ display (w,h) gameState =
           [displayStatus gameState.status]
 
 
+displayGoal goal =
+    Collage.move (goal.x,goal.y) <|
+      Collage.toForm <|
+        Element.image (truncate <| Utils.squareSize) (truncate <| Utils.squareSize)  "../../assets/imgs/goal.png"
 
-displayStatus = Collage.toForm << Text.asText
+displayStatus status = Collage.toForm <|
+  case status of
+    Ongoing  -> Element.empty
+    Victory  -> Text.centered <| Text.color Color.yellow <| Text.fromString "Victory!"
+    GameOver -> Text.centered <| Text.color Color.red    <| Text.fromString "GAME OVER"

@@ -78,8 +78,8 @@ act time action player =
       Acting a t -> { player | state <- Acting a (t-time) }
       Win -> player
     Die ->  { player | state <- Dead }
-    DropBanana     -> Object.stop { player | state <- Acting DroppingBanana  (Time.second * 1), hasBanana <- False }
-    PickUpBanana   -> Object.stop { player | state <- Acting PickingUpBanana (Time.second * 2), hasBanana <- True  }
+    DropBanana     -> Object.stop { player | state <- Acting DroppingBanana  (Time.second * 0.5), hasBanana <- False }
+    PickUpBanana   -> Object.stop { player | state <- Acting PickingUpBanana (Time.second * 0.7), hasBanana <- True  }
     Walk direction -> walk direction player
 
 isPickingUpBanana player = case player.state of

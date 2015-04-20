@@ -16,6 +16,13 @@ and list = case list of
   False::_   -> False
   True::rest -> and rest
 
+or : List Bool -> Bool
+or list = case list of
+  []         -> False
+  True::rest -> True
+  False::rest-> or rest
+
+
 type alias Point = {x:Float,y:Float}
 
 scale : Int -> Float
@@ -57,6 +64,6 @@ bounds w h center =
      , lowerRight = lowerRight }
 
 squareBounds : Point -> Bounds
-squareBounds = bounds (squareSize-4) (squareSize-4)
+squareBounds = bounds (squareSize-4) (squareSize-6)
 
 

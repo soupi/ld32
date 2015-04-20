@@ -102,7 +102,7 @@ act time action guard =
           (dy,seed'') = Random.generate (Random.int (-1) 1) seed'
       in
          trip (dx,dy) { guard | vx <- (toFloat dx) * 7, vy <- (toFloat dy) * 7 }
-         |> \g -> { g | state <- Tripping (Time.second * 2), seed <- seed'' }
+         |> \g -> { g | state <- Tripping (Time.second * 3), seed <- seed'' }
     Wait -> case guard.state of
       Walking _ _ -> { guard | state <- Tripping 0 }  -- invariant. Shouldn't happen.
       Tripping t  -> (\g -> { g | state <- Tripping (t - time) }) <| walk (0,0) 0 guard -- (for banana slip)
@@ -140,7 +140,10 @@ chase ((dx,dy) as dir) time guard =
 trip : (Int,Int) -> Guard -> Guard
 trip ((dx,dy) as dir) guard = Object.walk dir 1.7 20 guard
 
-
+isTripping : Guard -> Bool
+isTripping guard = case guard.state of
+  Tripping _ -> True
+  _ -> False
 
 {-- Part 4: Display the player -----------------------------------------------
 

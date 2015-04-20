@@ -44,31 +44,31 @@ How do we use the model?
 
 create : Int -> Int -> Int -> (WorldMap, Collage.Form)
 create w h seed =
-  let (map,_)  = createMaze (0,w) (0, h) (Random.initialSeed seed) (Array2D.repeat w h False)
+  let (map,_)  = createMaze (0,w-1) (0, h-1) (Random.initialSeed seed) (Array2D.repeat w h False) 2
       form     = worldMapForm map
   in
      (map, form)
 
 
 
-createMaze : (Int, Int) -> (Int, Int) -> Random.Seed -> WorldMap -> (WorldMap, Random.Seed)
-createMaze (lw',hw') (lh',hh') seed map =
-  let (lw,hw,lh,hh) = (lw' + 1, hw' - 1, lh' + 1, hh' - 1)
+createMaze : (Int, Int) -> (Int, Int) -> Random.Seed -> WorldMap -> Int -> (WorldMap, Random.Seed)
+createMaze (lw',hw') (lh',hh') seed map maxD =
+  let (lw,hw,lh,hh) = (lw' + 0, hw' - 0, lh' + 0, hh' - 0)
       _ = Debug.log "values" (lw,hw,lh,hh)
   in
-  if (lw + 1) >= (hw - 1) || (lh + 1) >= (hh - 1)
-  then Debug.log "end" (map, seed)
+  if lw >= hw || lh >= hh || maxD == 0
+  then (map, seed)
   else
-    let (col,seed')     = Debug.log "col" Random.generate (Random.int lw hw) seed
-        (row,seed'')    = Debug.log "row" Random.generate (Random.int lh hh) seed'
-        (cdiv,seed''')  = Random.generate (Random.int lh hh) seed''
-        (rdiv,seed'''') = Random.generate (Random.int lw hw) seed'''
-        divRow          = fillRowWithWallExcept row lh hh rdiv map
-        dividedMaze     = fillColWithWallExcept col lw hw cdiv divRow
-        (maze1,s1) = createMaze (lw, col - 1) (lh, row - 1) seed'''' dividedMaze
-        (maze2,s2) = createMaze (lw, col - 1) (row + 1, hh) s1 maze1
-        (maze3,s3) = createMaze (col + 1, hw) (lh, row - 1) s2 maze2
-        maze       = createMaze (col + 1, hw) (row + 1, hh) s3 maze3
+    let (row,seed')     = Debug.log "col" <| Random.generate (Random.int (lw+1) (hw+1)) seed
+        (col,seed'')    = Debug.log "row" <| Random.generate (Random.int (lh+1) (hh-1)) seed'
+        (cdiv,seed''')  = Debug.log "c1" <| Random.generate (Random.int (lh+1) (hh-1)) seed''
+        (rdiv,seed'''') = Debug.log "r1" <| Random.generate (Random.int (lw+1) (hw-1)) seed'''
+        divRow          = fillRowWithWallExcept row lh hh cdiv map
+        dividedMaze     = fillColWithWallExcept col lw hw rdiv divRow
+        (maze1,s1) = createMaze (lw, col - 1) (lh, row - 1) seed'''' dividedMaze (maxD - 1)
+        (maze2,s2) = createMaze (lw, col - 1) (row + 1, hh) s1 maze1 (maxD - 1)
+        (maze3,s3) = createMaze (col + 1, hw) (lh, row - 1) s2 maze2 (maxD - 1)
+        maze       = createMaze (col + 1, hw) (row + 1, hh) s3 maze3 (maxD - 1)
     in
        maze
 
@@ -83,8 +83,8 @@ fillRowWithWallExcept row c1 c2 except map =
 fillColWithWallExcept : Int -> Int -> Int -> Int -> WorldMap -> WorldMap
 fillColWithWallExcept col r1 r2 except map =
   if | r1 > r2      -> map
-     | r1 == except -> fillRowWithWallExcept col (r1+1) r2 except map
-     | otherwise    -> fillRowWithWallExcept col (r1+1) r2 except <|
+     | r1 == except -> fillColWithWallExcept col (r1+1) r2 except map
+     | otherwise    -> fillColWithWallExcept col (r1+1) r2 except <|
                     Array2D.set r1 col True map
 
 
