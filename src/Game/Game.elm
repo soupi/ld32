@@ -115,7 +115,7 @@ collideGuardsPlayer guards player =
 
 checkStatus : GameState -> Status
 checkStatus gameState =
-  if | Object.isOverlapping gameState.player gameState.goal   -> Victory
+  if | gameState.player.state == Player.Win  -> Victory
      | gameState.player.state == Player.Dead -> GameOver
      | otherwise -> Ongoing
 
@@ -126,10 +126,11 @@ updateBananaPlayer ({time,userInput} as input) gameState =
         new_player = Player.act time action gameState.player
         valid_new_player = if WorldMap.isValidObjectLocation gameState.map new_player then new_player else Object.stop gameState.player
         collided_player  = collideGuardsPlayer gameState.guards valid_new_player
+        player = if Object.isOverlapping collided_player gameState.goal then { player | state <- Player.Win } else collided_player
     in
-        case Banana.logic gameState.banana collided_player action of
+        case Banana.logic gameState.banana player action of
           Nothing -> (gameState.banana, gameState.player)
-          Just b  -> (b, collided_player)
+          Just b  -> (b, player)
 
 guardsUpdate : Input.Input -> GameState -> List Guard.Guard
 guardsUpdate input gameState = List.map (guardUpdate input gameState) gameState.guards

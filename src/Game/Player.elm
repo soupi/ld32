@@ -134,4 +134,5 @@ getActionVerb player =
       Acting Caught _ -> "caught"
       Acting Dying _ -> "dead"
       Dead -> "dead"
+      Win  -> "win"
 
