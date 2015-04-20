@@ -63,7 +63,7 @@ How should the Banana be displayed to the user?
 
 display : Banana -> Collage.Form
 display banana = case banana of
-  Nothing    -> Collage.toForm <| Text.asText "you have the banana"
+  Nothing    -> Collage.move (120,20) <| Collage.toForm <| Text.asText "you have the banana"
   Just {x,y} ->
     Collage.move (x,y) <|
       Collage.filled Color.yellow <|

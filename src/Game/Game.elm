@@ -20,15 +20,17 @@ import Text
 import List
 
 -- Game
-import Game.Input    as Input
-import Game.Player   as Player
 import Game.WorldMap as WorldMap
-import Game.Object   as Object
 import Game.Banana   as Banana
+import Game.Player   as Player
+import Game.Object   as Object
+import Game.Guard    as Guard
 import Game.Utils    as Utils
+import Game.Input    as Input
 import Game.Maybe    as Maybe
 
 import Game.Player (defaultPlayer)
+import Game.Guard  (defaultGuard)
 
 -- Debug
 import Debug
@@ -61,6 +63,7 @@ What information do you need to represent the entire game?
 type alias GameState =
   { player : Player.Player
   , banana : Banana.Banana
+  , guards : List Guard.Guard
   , map    : WorldMap.WorldMap
   }
 
@@ -68,6 +71,7 @@ defaultGame : GameState
 defaultGame =
   { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
   , banana = Nothing
+  , guards = []
   , map    = WorldMap.create 20 20 }
 
 
