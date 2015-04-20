@@ -84,15 +84,23 @@ How does the game step from one state to another based on user input?
 
 stepGame : Input.Input -> GameState -> GameState
 stepGame ({dimensions,time,userInput} as input) gameState =
-    let action     = Player.getAction input gameState.player
-        new_player = Player.act time action gameState.player
-        valid_new_player = if WorldMap.isValidObjectLocation gameState.map new_player then new_player else Object.stop gameState.player
-        (p1, banana)     = case Banana.logic (Debug.watch "banana" gameState.banana) valid_new_player action of
-                Nothing -> (gameState.player, gameState.banana)
-                Just b  -> (valid_new_player, b)
+    let
+        (p1, banana) = updateBananaPlayer input gameState
+        --guards       = guardsUpdate input gameState
     in
        { gameState | player <- Debug.watch "player" p1
                    , banana <- Debug.watch "banana" banana }
+
+
+updateBananaPlayer : Input.Input -> GameState -> (Player.Player, Banana.Banana)
+updateBananaPlayer ({dimensions,time,userInput} as input) gameState =
+    let action     = Player.getAction input gameState.player
+        new_player = Player.act time action gameState.player
+        valid_new_player = if WorldMap.isValidObjectLocation gameState.map new_player then new_player else Object.stop gameState.player
+    in
+        case Banana.logic gameState.banana valid_new_player action of
+          Nothing -> (gameState.player, gameState.banana)
+          Just b  -> (valid_new_player, b)
 
 
 {-- Part 4: Display the game --------------------------------------------------
