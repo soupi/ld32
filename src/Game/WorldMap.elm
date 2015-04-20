@@ -79,6 +79,16 @@ size map = if Array2D.length map == 0 then (0, 0)
 scaledSize : WorldMap -> (Float, Float)
 scaledSize map = (Utils.apply2 Utils.scale (size map))
 
+closestValidPoint {x,y} map =
+  let newX = if | x + (Utils.squareSize/2) >= fst (scaledSize map) -> (fst (scaledSize map)) - Utils.squareSize - 1
+                | x - (Utils.squareSize/2) <= 0 -> (Utils.squareSize/2) + 1
+                | otherwise -> x + (Utils.squareSize/2)
+      newY = if | y - (Utils.squareSize/2) >= snd (scaledSize map) -> (snd (scaledSize map)) - Utils.squareSize - 1
+                | y + (Utils.squareSize/2) <= 0 -> (Utils.squareSize/2) + 1
+                | otherwise -> y + (Utils.squareSize/2)
+  in (newX, newY)
+
+
 
 
 {-- View ---------------------------------------------------------------------

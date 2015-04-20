@@ -24,6 +24,9 @@ scale = (*) squareSize << toFloat
 scaleF : Float -> Float
 scaleF = (*) squareSize
 
+scaleP : (Int, Int) -> Point
+scaleP (x,y) = {x=scale x, y=scale y}
+
 unscaleP : Point -> (Int, Int)
 unscaleP {x,y} = (unscale x, unscale y)
 

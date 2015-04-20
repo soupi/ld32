@@ -88,7 +88,7 @@ isDroppingBanana player = case player.state of
 walk : (Int,Int) -> Player -> Player
 walk ((dx,dy) as dir) player =
   let
-      newPlayer = Object.walk dir player
+      newPlayer = Object.walk dir 1.2 6 player
   in
     { newPlayer | state <- Walking (dx,dy) }
 

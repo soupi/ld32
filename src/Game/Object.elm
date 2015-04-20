@@ -80,20 +80,20 @@ friction vel =
 frictionConst : Float
 frictionConst = 1
 
-walk : (Int,Int) -> MovingObject a -> MovingObject a
-walk (dx,dy) obj = move <|
-    { obj | vx    <- addV dx obj.vx
-          , vy    <- addV dy obj.vy }
+walk : (Int,Int) -> Float -> Float -> MovingObject a -> MovingObject a
+walk (dx,dy) step limit obj = move <|
+    { obj | vx    <- addV dx step limit obj.vx
+          , vy    <- addV dy step limit obj.vy }
 
 
-addV : Int -> Float -> Float
-addV dir vel =
+addV : Int -> Float -> Float -> Float -> Float
+addV dir step abslimit vel =
   let
       limit = if | dir == 0 ->   0
-                 | dir  > 0 ->  10
-                 | dir  < 0 -> -10
+                 | dir  > 0 ->  abslimit
+                 | dir  < 0 -> -abslimit
   in
-      addVelocity 1.2 limit dir vel
+      addVelocity step limit dir vel
 
 
 

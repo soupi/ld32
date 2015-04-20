@@ -48,8 +48,8 @@ type GuardState = Walking (Int,Int) Float
                 | Tripping Float
 
 
-defaultGuard : Int -> Guard
-defaultGuard seed = { x = 0, y = 0, vx = 0, vy = 0, seed = Random.initialSeed seed, state = Walking (0,0) 1 }
+defaultGuard : (Float, Float) -> Int -> Guard
+defaultGuard (x,y) seed = { x = x, y = y, vx = 0, vy = 0, seed = Random.initialSeed seed, state = Walking (0,0) 0 }
 
 {-- Part 3: Update the Guard -------------------------------------------------
 
@@ -58,7 +58,7 @@ How does the Guard step from one state to another based on user input?
 ------------------------------------------------------------------------------}
 
 getAction : WorldMap.WorldMap -> Player.Player -> Banana.Banana -> Guard -> Action
-getAction map player banana guard =
+getAction map player banana guard = Debug.watch "guard action" <|
   case guard.state of
     Tripping timeLeft    -> if timeLeft > 0 then Wait else Walk (0, 0)
     Chasing dir timeLeft ->
@@ -75,7 +75,7 @@ isInSight : (Int, Int) -> (Int, Int) -> WorldMap.WorldMap -> (Int, Int) -> Bool
 isInSight gLoc dir map pLoc = checkIfPlayerIsClose gLoc dir pLoc && checkIfNoWalls gLoc dir map pLoc
 
 checkIfNoWalls : (Int, Int) -> (Int, Int) -> WorldMap.WorldMap -> (Int, Int) -> Bool
-checkIfNoWalls (gx,gy) (dx,dy) map (px,py) =
+checkIfNoWalls (gx,gy) (dx,dy) map (px,py) = not <|
   if | dx /= 0 && dy /= 0 || dx == 0 && dy == 0 -> False
      | dx /= 0 -> WorldMap.isEmptyColFromTo gy gx (gx + px) map
      | dy /= 0 -> WorldMap.isEmptyRowFromTo gx gy (gy + py) map
@@ -84,10 +84,10 @@ checkIfPlayerIsClose : (Int, Int) -> (Int, Int) -> (Int, Int) -> Bool
 checkIfPlayerIsClose (gx,gy) dir (px,py) =
   case dir of
     (0,  0) -> False
-    (0, dy) -> if dy > 0 then gy < py && gy + (dy * 5) > py
-               else gy > py && gy + (dy * 5) < py
-    (dx, 0) -> if dx > 0 then gx < px && gx + (dx * 5) > px
-               else gx > px && gx + (dx * 5) < px
+    (0, dy) -> if dy > 0 then gy < py && gy + (dy * 5) > py && gx == px
+               else gy > py && gy + (dy * 5) < py && gx == px
+    (dx, 0) -> if dx > 0 then gx < px && gx + (dx * 5) > px && gy == py
+               else gx > px && gx + (dx * 5) < px && gy == py
     (dx,dy) -> False
 
 
@@ -97,27 +97,40 @@ act time action guard =
     Walk dir     -> case guard.state of
         Walking _ t -> walk dir (t - time) guard
         _ -> walk dir 4 guard
-    Trip         -> { guard | state <- Tripping 3 }
+    Trip         -> { guard | state <- Tripping (Time.second * 3) }
     Wait -> Object.stop <| case guard.state of
       Walking _ _ -> { guard | state <- Tripping 0 }  -- invariant. Shouldn't happen.
-      Tripping t  -> { guard | state <- Tripping (t - time) }
+      Tripping t  -> (\g -> { g | state <- Tripping (t - time) }) <| walk (0,0) 0 guard -- (for banana slip)
     Chase dir     -> case guard.state of
-        Chasing _ t -> { guard | state <- Chasing dir (t - time) }
-        _ -> { guard | state <- Chasing dir 5 }
+        Chasing _ t -> chase dir t guard
+        _ -> { guard | state <- Chasing dir (Time.second * 5) }
     ChangeDirection ->
-        let (res,seed')  = Random.generate (Random.int 0    1) guard.seed
-            (dir,seed'') = Random.generate (Random.int (-1) 1) seed'
-            newdir       = if res == 0 then (0, dir) else (dir,0)
-        in
-            { guard | seed <- seed'', state <- Walking newdir 4 }
+      newDirection guard
+
+
+newDirection guard =
+  let (res,seed')  = Random.generate (Random.int 0    1) guard.seed
+      (dir,seed'') = Random.generate (Random.int (-1) 1) seed'
+      newdir       = if res == 0 then (0, dir) else (dir,0)
+      newG         = (\g -> { g | seed <- seed'' }) <| walk newdir (Time.second * 3) <| Object.stop guard
+  in
+     newG
 
 
 walk : (Int,Int) -> Float -> Guard -> Guard
 walk ((dx,dy) as dir) time guard =
   let
-      newGuard = Object.walk dir guard
+      newGuard = Object.walk dir 1.05 1 guard
   in
     { newGuard | state <- Walking (dx,dy) time }
+
+chase : (Int,Int) -> Float -> Guard -> Guard
+chase ((dx,dy) as dir) time guard =
+  let
+      newGuard = Object.walk dir 1.05 5 guard
+  in
+    { newGuard | state <- Chasing (dx,dy) time }
+
 
 
 {-- Part 4: Display the player -----------------------------------------------
