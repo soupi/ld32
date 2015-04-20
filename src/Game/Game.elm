@@ -86,9 +86,10 @@ defaultGame =
     , form   = form }
 
 defaultGuards =
-  [defaultGuard (Utils.scale 6, Utils.scale 5) 5
-  ,defaultGuard (Utils.scale 14, Utils.scale 9) 10
-  ,defaultGuard (Utils.scale 9, Utils.scale 12) 8
+  [defaultGuard (Utils.scale 7, Utils.scale 5) 5
+  ,defaultGuard (Utils.scale 14, Utils.scale 7) 3
+  ,defaultGuard (Utils.scale 9, Utils.scale 8) 27
+  ,defaultGuard (Utils.scale 19, Utils.scale 5) 38
   ]
 
 
