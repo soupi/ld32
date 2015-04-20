@@ -30,12 +30,6 @@ type alias Object a = { a | x:Float, y:Float }
 
 type alias MovingObject a = Object { a | vx : Float, vy : Float }
 
-{-
-type alias Banana = Object {}
-
-type alias Cop = MovingObject { state : CopState }
-
--}
 
 
 {-- Update -------------------------------------------------------------------

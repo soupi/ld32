@@ -60,10 +60,16 @@ What information do you need to represent the entire game?
 
 ------------------------------------------------------------------------------}
 
+type alias Goal = Object.Object {}
+
+type Status = Ongoing | GameOver | Victory
+
 type alias GameState =
   { player : Player.Player
   , banana : Banana.Banana
   , guards : List Guard.Guard
+  , goal   : Goal
+  , status : Status
   , map    : WorldMap.WorldMap
   }
 
@@ -72,6 +78,8 @@ defaultGame =
   { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 2 })
   , banana = Nothing
   , guards = [defaultGuard (Utils.scale 6, Utils.scale 7) 5]
+  , goal   = { x = 16, y = 16 }
+  , status = Ongoing
   , map    = WorldMap.create 20 20 }
 
 
@@ -84,13 +92,25 @@ How does the game step from one state to another based on user input?
 
 stepGame : Input.Input -> GameState -> GameState
 stepGame input gameState =
-    let
-        (banana, p1) = updateBananaPlayer input gameState
-        guards       = guardsUpdate input gameState
-    in
-       { gameState | player <- Debug.watch "player" p1
-                   , banana <- Debug.watch "banana" banana
-                   , guards <- Debug.watch "guards" guards }
+  case gameState.status of
+    GameOver -> gameState
+    Victory  -> gameState
+    Ongoing  ->
+      let
+          (banana, p1) = updateBananaPlayer input gameState
+          guards       = guardsUpdate input gameState
+          newGameState = { gameState | player <- Debug.watch "player" p1
+                                     , banana <- Debug.watch "banana" banana
+                                     , guards <- Debug.watch "guards" guards }
+          status = checkStatus newGameState
+      in
+          { newGameState | status <- status }
+
+checkStatus : GameState -> Status
+checkStatus gameState =
+  if | Object.isOverlapping gameState.player gameState.goal   -> Victory
+     | Utils.and <| List.map (Object.isOverlapping gameState.player) gameState.guards -> GameOver
+     | otherwise -> Ongoing
 
 
 updateBananaPlayer : Input.Input -> GameState -> (Banana.Banana, Player.Player)
@@ -128,9 +148,16 @@ display (w,h) gameState =
       halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.map
   in
      container w h middle <|
+
         uncurry collage size <|
           [WorldMap.display gameState.map
           ,Collage.move halfSize <| Banana.display gameState.banana
           ,Collage.move halfSize <| Debug.trace "player1" <| Player.display gameState.player]
           `List.append`
           List.map (Collage.move halfSize << Guard.display) gameState.guards
+          `List.append`
+          [displayStatus gameState.status]
+
+
+
+displayStatus = Collage.toForm << Text.asText
