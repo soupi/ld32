@@ -50,9 +50,11 @@ addVelocity accel limit dir vel =
 
 move : MovingObject a -> MovingObject a
 move ({x,y,vx,vy} as obj) =
-  applyFriction <|
-      { obj | x <- x + vx
-            , y <- y + vy }
+  let (vx',vy') = if vx /= 0 && vy /= 0 then (vx * 0.7, vy * 0.7) else (vx,vy)
+  in
+    applyFriction <|
+        { obj | x <- x + vx'
+              , y <- y + vy' }
 
 stop : MovingObject a -> MovingObject a
 stop obj = { obj | vx <- 0, vy <- 0 }

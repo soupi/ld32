@@ -37,12 +37,14 @@ type Action = Walk (Int,Int)
             | DropBanana
             | PickUpBanana
             | Wait
+            | Die
 
 type Act = DroppingBanana | PickingUpBanana | Caught | Dying
 
 type PlayerState = Walking (Int,Int)
                  | Acting Act Float
                  | Dead
+                 | Win
 
 
 defaultPlayer : Player
@@ -58,6 +60,8 @@ getAction : Input.Input -> Player -> Action
 getAction {dimensions,time,userInput} player =
   case player.state of
     Dead -> Wait
+    Win -> Wait
+    Acting Dying timeLeft -> if timeLeft > 0 then Wait else Die
     Acting _ timeLeft -> if timeLeft > 0 then Wait else Walk (userInput.direction.x, userInput.direction.y)
     Walking _         ->
       if | userInput.actionA && (not player.hasBanana) -> PickUpBanana
@@ -71,7 +75,9 @@ act time action player =
     Wait -> Object.stop <| case player.state of
       Walking _  -> { player | state <- Dead }  -- invariant. Shouldn't happen.
       Dead       ->   player
-      Acting a v -> { player | state <- Acting a (v-time) }
+      Acting a t -> { player | state <- Acting a (t-time) }
+      Win -> player
+    Die ->  { player | state <- Dead }
     DropBanana     -> Object.stop { player | state <- Acting DroppingBanana  (Time.second * 1), hasBanana <- False }
     PickUpBanana   -> Object.stop { player | state <- Acting PickingUpBanana (Time.second * 2), hasBanana <- True  }
     Walk direction -> walk direction player
@@ -88,9 +94,13 @@ isDroppingBanana player = case player.state of
 walk : (Int,Int) -> Player -> Player
 walk ((dx,dy) as dir) player =
   let
-      newPlayer = Object.walk dir 1.2 6 player
+      newPlayer = Object.walk dir 1.2 3 player
   in
     { newPlayer | state <- Walking (dx,dy) }
+
+
+die player = { player | state <- Acting Dying (Time.second * 0.5) }
+win player = { player | state <- Win }
 
 
 {-- Part 4: Display the player -----------------------------------------------
@@ -121,7 +131,7 @@ getActionVerb player =
            | otherwise -> "down"
       Acting DroppingBanana _  -> "up"
       Acting PickingUpBanana _ -> "up"
-      Acting Caught _ -> "left"
-      Acting Dying _ -> "right"
-      Dead -> "up"
+      Acting Caught _ -> "caught"
+      Acting Dying _ -> "dead"
+      Dead -> "dead"
 

@@ -106,10 +106,17 @@ stepGame input gameState =
       in
           { newGameState | status <- status }
 
+
+collideGuardsPlayer : List Guard.Guard -> Player.Player -> Player.Player
+collideGuardsPlayer guards player =
+  if Utils.and <| List.map (Object.isOverlapping player) guards
+     then Player.die player
+     else player
+
 checkStatus : GameState -> Status
 checkStatus gameState =
   if | Object.isOverlapping gameState.player gameState.goal   -> Victory
-     | Utils.and <| List.map (Object.isOverlapping gameState.player) gameState.guards -> GameOver
+     | gameState.player.state == Player.Dead -> GameOver
      | otherwise -> Ongoing
 
 
@@ -118,10 +125,11 @@ updateBananaPlayer ({time,userInput} as input) gameState =
     let action     = Player.getAction input gameState.player
         new_player = Player.act time action gameState.player
         valid_new_player = if WorldMap.isValidObjectLocation gameState.map new_player then new_player else Object.stop gameState.player
+        collided_player  = collideGuardsPlayer gameState.guards valid_new_player
     in
-        case Banana.logic gameState.banana valid_new_player action of
+        case Banana.logic gameState.banana collided_player action of
           Nothing -> (gameState.banana, gameState.player)
-          Just b  -> (b, valid_new_player)
+          Just b  -> (b, collided_player)
 
 guardsUpdate : Input.Input -> GameState -> List Guard.Guard
 guardsUpdate input gameState = List.map (guardUpdate input gameState) gameState.guards

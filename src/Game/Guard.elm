@@ -10,7 +10,7 @@
 module Game.Guard where
 
 -- Packages
-import Graphics.Element
+import Graphics.Element as Element
 import Graphics.Collage as Collage
 import Graphics.Collage (rect, filled, outlined)
 import Color
@@ -149,6 +149,29 @@ How should the player be displayed to the user?
 ------------------------------------------------------------------------------}
 
 display guard =
-  Collage.move (guard.x,guard.y) <|
-  filled Color.red <|
-  uncurry rect <| Utils.apply2 ((*) Utils.squareSize) (1,1)
+  let action = getActionVerb guard
+  in
+      Collage.move (guard.x,guard.y) <|
+        Collage.toForm <|
+          uncurry Element.image (Utils.apply2 ((*) Utils.squareSize) (1,1)) <|
+            "../../assets/imgs/guard-" ++ action ++ ".png"
+
+
+
+getActionVerb : Guard -> String
+getActionVerb guard =
+    case guard.state of
+      Walking (x,y) _ ->
+        if | y > 0 -> "up"
+           | y < 0 -> "down"
+           | x > 0 -> "right"
+           | x < 0 -> "left"
+           | otherwise -> "right"
+      Chasing (x,y) _ ->
+        if | y > 0 -> "up"
+           | y < 0 -> "chase-down"
+           | x > 0 -> "chase-right"
+           | x < 0 -> "chase-left"
+           | otherwise -> "chase-down"
+      Tripping _ -> "trip"
+
