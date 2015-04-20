@@ -24,6 +24,7 @@ import Game.Input    as Input
 import Game.Player   as Player
 import Game.WorldMap as WorldMap
 import Game.Object   as Object
+import Game.Banana   as Banana
 import Game.Utils    as Utils
 import Game.Maybe    as Maybe
 
@@ -57,11 +58,9 @@ What information do you need to represent the entire game?
 
 ------------------------------------------------------------------------------}
 
-type alias Banana = Maybe (Object.Object {})
-
 type alias GameState =
   { player : Player.Player
-  , banana : Banana
+  , banana : Banana.Banana
   , map    : WorldMap.WorldMap
   }
 
@@ -83,31 +82,13 @@ stepGame : Input.Input -> GameState -> GameState
 stepGame ({dimensions,time,userInput} as input) gameState =
     let action     = Player.getAction input gameState.player
         new_player = Player.act time action gameState.player
-        valid_new_player = if Object.checkBounds (WorldMap.isValidStep gameState.map << Utils.unscaleP) new_player then new_player else Object.stop gameState.player
-        (p1, banana)     = case bananaLogic (Debug.watch "banana" gameState.banana) valid_new_player action of
+        valid_new_player = if WorldMap.isValidObjectLocation gameState.map new_player then new_player else Object.stop gameState.player
+        (p1, banana)     = case Banana.logic (Debug.watch "banana" gameState.banana) valid_new_player action of
                 Nothing -> (gameState.player, gameState.banana)
                 Just b  -> (valid_new_player, b)
     in
        { gameState | player <- Debug.watch "player" p1
                    , banana <- Debug.watch "banana" banana }
-
-
--- Nothing: move is invalid
--- Just banana: move is valid - new state for banana
-bananaLogic : Banana -> Player.Player -> Player.Action -> Maybe Banana
-bananaLogic banana player action =
-  let
-      dropping = case banana of
-                    Nothing -> Just <| Just {x=player.x, y=player.y}
-                    Just _  -> Nothing
-      picking  = case banana of
-            Nothing -> Nothing
-            Just b  -> if Object.isOverlapping player b then Just Nothing else Nothing
-  in
-      case action of
-        Player.PickUpBanana -> picking
-        Player.DropBanana   -> dropping
-        _ -> Just banana
 
 
 {-- Part 4: Display the game --------------------------------------------------
@@ -124,13 +105,5 @@ display (w,h) gameState =
      container w h middle <|
         uncurry collage size <|
           [WorldMap.display gameState.map
-          ,Collage.move halfSize <| displayBanana gameState.banana
+          ,Collage.move halfSize <| Banana.display gameState.banana
           ,Collage.move halfSize <| Debug.trace "player1" <| Player.display gameState.player]
-
-displayBanana : Banana -> Collage.Form
-displayBanana banana = case banana of
-  Nothing    -> toForm <| Text.asText "you have the banana"
-  Just {x,y} ->
-    Collage.move (x,y) <|
-      Collage.filled Color.yellow <|
-        Collage.rect Utils.squareSize Utils.squareSize

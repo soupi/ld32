@@ -24,6 +24,9 @@ scale = (*) squareSize << toFloat
 scaleF : Float -> Float
 scaleF = (*) squareSize
 
+unscaleP : Point -> (Int, Int)
+unscaleP {x,y} = (unscale x, unscale y)
+
 unscale : Float -> Int
 unscale x = if | x < 0     -> round (x - squareSize) // squareSize
                | otherwise -> round x // squareSize
@@ -31,9 +34,6 @@ unscale x = if | x < 0     -> round (x - squareSize) // squareSize
 
 lessThan : Point -> Point -> Bool
 lessThan p1 p2 = p1.x <= p2.x && p1.y <= p2.y
-
-unscaleP : Point -> (Int, Int)
-unscaleP {x,y} = (unscale x, unscale y)
 
 type alias Bounds = { upperLeft  : Point
                     , upperRight : Point

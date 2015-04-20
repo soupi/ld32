@@ -19,8 +19,9 @@ import Maybe
 import Array2D
 
 -- Game
-import Game.Input as Input
-import Game.Utils as Utils
+import Game.Input  as Input
+import Game.Utils  as Utils
+import Game.Object as Object
 
 -- Debug
 import Debug
@@ -46,26 +47,30 @@ create w h = Array2D.repeat w h False
 get : Int -> Int -> WorldMap -> Maybe Bool
 get = Array2D.get
 
-emptyRowFromTo : Int -> Int -> Int -> WorldMap -> Maybe Bool
-emptyRowFromTo row c1 c2 map =
-  if | c1 >  c2 -> emptyRowFromTo row c2 c1 map
-     | c1 == c2 -> get row c1 map
+isEmptyRowFromTo : Int -> Int -> Int -> WorldMap -> Bool
+isEmptyRowFromTo row c1 c2 map =
+  if | c1 >  c2 -> isEmptyRowFromTo row c2 c1 map
+     | c1 == c2 -> Maybe.withDefault False <| get row c1 map
      | c1 <  c2 -> case get row c1 map of
-                     Nothing -> Nothing
-                     Just True  -> Just False
-                     Just False -> emptyRowFromTo row (c1 + 1) c2 map
+                     Nothing    -> False
+                     Just True  -> False
+                     Just False -> isEmptyRowFromTo row (c1 + 1) c2 map
 
-emptyColFromTo : Int -> Int -> Int -> WorldMap -> Maybe Bool
-emptyColFromTo col r1 r2 map =
-  if | r1 >  r2 -> emptyColFromTo col r2 r1 map
-     | r1 == r2 -> get r1 col map
+isEmptyColFromTo : Int -> Int -> Int -> WorldMap -> Bool
+isEmptyColFromTo col r1 r2 map =
+  if | r1 >  r2 -> isEmptyColFromTo col r2 r1 map
+     | r1 == r2 -> Maybe.withDefault False <| get r1 col map
      | r1 <  r2 -> case get r1 col map of
-                     Nothing -> Nothing
-                     Just True  -> Just False
-                     Just False -> emptyColFromTo col (r1 + 1) r2 map
+                     Nothing    -> False
+                     Just True  -> False
+                     Just False -> isEmptyColFromTo col (r1 + 1) r2 map
 
 isValidStep : WorldMap -> (Int, Int) -> Bool
 isValidStep map (x,y) = Maybe.withDefault False <| Maybe.map not <| get x y map
+
+isValidObjectLocation : WorldMap -> Object.Object a -> Bool
+isValidObjectLocation map obj = Object.checkBounds (isValidStep map << Utils.unscaleP) obj
+
 
 size : WorldMap -> (Int, Int)
 size map = if Array2D.length map == 0 then (0, 0)
@@ -73,6 +78,7 @@ size map = if Array2D.length map == 0 then (0, 0)
 
 scaledSize : WorldMap -> (Float, Float)
 scaledSize map = (Utils.apply2 Utils.scale (size map))
+
 
 
 {-- View ---------------------------------------------------------------------
