@@ -59,16 +59,17 @@ createMaze (lw',hw') (lh',hh') seed map maxD =
   if lw >= hw || lh >= hh || maxD == 0
   then (map, seed)
   else
-    let (row,seed')     = Debug.log "col" <| Random.generate (Random.int (lw+1) (hw+1)) seed
-        (col,seed'')    = Debug.log "row" <| Random.generate (Random.int (lh+1) (hh-1)) seed'
-        (cdiv,seed''')  = Debug.log "c1" <| Random.generate (Random.int (lh+1) (hh-1)) seed''
-        (rdiv,seed'''') = Debug.log "r1" <| Random.generate (Random.int (lw+1) (hw-1)) seed'''
+    let (row,seed')     = Random.generate (Random.int (lw+1) (hw+1)) seed
+        (col,seed'')    = Random.generate (Random.int (lh+1) (hh-1)) seed'
+        (cdiv,seed''')  = Random.generate (Random.int (lh+1) (hh-1)) seed''
+        (rdiv1,seed'''') = Random.generate (Random.int (lw+1) (row-1)) seed'''
+        (rdiv2,seed''''') = Random.generate (Random.int (row+1) (hw-1)) seed''''
         divRow          = fillRowWithWallExcept row lh hh cdiv map
-        dividedMaze     = fillColWithWallExcept col lw hw rdiv divRow
-        (maze1,s1) = createMaze (lw, col - 1) (lh, row - 1) seed'''' dividedMaze (maxD - 1)
-        (maze2,s2) = createMaze (lw, col - 1) (row + 1, hh) s1 maze1 (maxD - 1)
-        (maze3,s3) = createMaze (col + 1, hw) (lh, row - 1) s2 maze2 (maxD - 1)
-        maze       = createMaze (col + 1, hw) (row + 1, hh) s3 maze3 (maxD - 1)
+        dividedMaze     = fillColWithWallExcept col lw hw rdiv1 rdiv2 divRow
+        (maze1,s1) = createMaze (lw, row - 1) (lh, col - 1) seed'''' dividedMaze (maxD - 1)
+        (maze2,s2) = createMaze (lw, row - 1) (col + 1, hh) s1 maze1 (maxD - 1)
+        (maze3,s3) = createMaze (row + 1, hw) (lh, col - 1) s2 maze2 (maxD - 1)
+        maze       = createMaze (row + 1, hw) (col + 1, hh) s3 maze3 (maxD - 1)
     in
        maze
 
@@ -80,11 +81,11 @@ fillRowWithWallExcept row c1 c2 except map =
      | otherwise    -> fillRowWithWallExcept row (c1+1) c2 except <|
                     Array2D.set row c1 True map
 
-fillColWithWallExcept : Int -> Int -> Int -> Int -> WorldMap -> WorldMap
-fillColWithWallExcept col r1 r2 except map =
+fillColWithWallExcept : Int -> Int -> Int -> Int -> Int -> WorldMap -> WorldMap
+fillColWithWallExcept col r1 r2 except1 except2 map =
   if | r1 > r2      -> map
-     | r1 == except -> fillColWithWallExcept col (r1+1) r2 except map
-     | otherwise    -> fillColWithWallExcept col (r1+1) r2 except <|
+     | r1 == except1 || r1 == except2 -> fillColWithWallExcept col (r1+1) r2 except1 except2 map
+     | otherwise    -> fillColWithWallExcept col (r1+1) r2 except1 except2 <|
                     Array2D.set r1 col True map
 
 

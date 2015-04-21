@@ -77,19 +77,19 @@ defaultGame : GameState
 defaultGame =
   let (map, form) = WorldMap.create 20 15 9
   in
-    { player = ({ defaultPlayer | x <- Utils.scale 1, y <- Utils.scale 1 })
+    { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 12 })
     , banana = Nothing
     , guards = defaultGuards
-    , goal   = { x = 19 * Utils.squareSize, y = 3 * (Utils.squareSize / 2) }
+    , goal   = { x = 19 * Utils.squareSize, y = 11 * (Utils.squareSize) }
     , status = Ongoing
     , map    = map
     , form   = form }
 
 defaultGuards =
-  [defaultGuard (Utils.scale 7, Utils.scale 5) 5
-  ,defaultGuard (Utils.scale 14, Utils.scale 7) 3
-  ,defaultGuard (Utils.scale 9, Utils.scale 8) 27
-  ,defaultGuard (Utils.scale 19, Utils.scale 5) 38
+  [defaultGuard (Utils.scale 3, Utils.scale 5) 5
+  ,defaultGuard (Utils.scale 14, Utils.scale 6) 3
+  ,defaultGuard (Utils.scale 9, Utils.scale 9) 27
+  ,defaultGuard (Utils.scale 19, Utils.scale 2) 38
   ]
 
 
