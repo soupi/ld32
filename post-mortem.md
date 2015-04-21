@@ -8,7 +8,7 @@ tags: gamedev, functional, frp, elm
 Each competition starts when it's theme is announced and each participant has 48/72 hours
 for compo/jam entry respectively to complete and publish a game based on the theme.
 
-This weekend [LD32][ld32] took place, and I decided to participate while using [Elm][] to build [my game][] (source on [github][]).
+This weekend [LD32][ld32] took place, and I decided to participate while using [Elm][] to build my game - [Banana Bandit][mygame] (source on [github][]).
 
 Since I didn't have a lot of Elm experience (I wrote at most 100 LOC in it) prior to jam,
 I decided that my goal is to learn Elm, FRP and a new way to model games on the fly, during the jam,
@@ -100,5 +100,5 @@ Thanks for reading!
 [infrec]: https://github.com/soupi/ld32/blob/c1c6fbb591dc27620935ce7216b7e3c6a9776141/src/Game/Game.elm#L86
 [mem-commit]: https://github.com/soupi/ld32/tree/80b80e76124691639a99af23dad4c84b49479d09
 [elm-audio]: https://github.com/jcollard/elm-audio
-[my game]: http://www.gilmi.xyz/static/misc/gamejams/ld32/Game/dist/index.html
+[mygame]: http://ludumdare.com/compo/ludum-dare-32/?action=preview&uid=29243
 [github]: https://github.com/soupi/ld32
