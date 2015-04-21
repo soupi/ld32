@@ -78,6 +78,7 @@ Second set of problems: working with Elm was not without problems.
 I had fun, I learned a lot, and I was really happy to finally using functional programming for games.
 Even though I got stuck a lot of times, have had to chase and solve many bugs due to faulty logic
 and didn't __really__ finish the game, I was a very eye-opening experience and I felt like I gained a lot from it.
+
 Elm is still a little rough around the edges and so it is not so easy to work with, at the moment,
 during a 72 hour game jam, from scratch, with minimal prior knowledge on it,
 But it is also very young. I have a feeling that if it keeps in that direction - work hard on better tools like elm-reactor,
