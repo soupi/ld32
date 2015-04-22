@@ -20,8 +20,9 @@ and what could have been done better.
 
 ---
 
-Starting the work was pretty easy, I was able to install Elm-platform pretty easily,
+Starting the work was pretty easy:
 
+- I was able to install Elm-platform pretty easily
 - There are [many examples][exmps] on the main Elm website that can be run and changes online
 - There is an [Elm architecture][archtutor] that explains how to start modeling applications in Elm
 - There is a [Game Skeleton][game-skeleton] which I used as a template
