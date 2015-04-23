@@ -12,7 +12,6 @@ module Game.GameManager where
 -- Packages
 import Graphics.Element as Element
 import Graphics.Collage as Collage
-import Color
 import Window
 import Signal
 import Text
@@ -25,9 +24,6 @@ import Game.Game     as Game
 import Game.Input    as Input
 import Game.Utils    as Utils
 import Game.WorldMap as WorldMap
-
--- Debug
-import Debug
 
 
 {-- Part 0: Signals -----------------------------------------------------------
@@ -58,7 +54,6 @@ type Status = Ongoing Int | GameOver | Victory | Wait Int Float
 
 type alias GameState =
   { game   : Game.GameState
-  , level  : Int
   , seed   : Random.Seed
   , status : Status
   }
@@ -80,13 +75,13 @@ How does the game step from one state to another based on user input?
 ------------------------------------------------------------------------------}
 
 stepGame : Input.Input -> GameState -> GameState
-stepGame input gameState =
+stepGame ({time} as input) gameState =
   case gameState.status of
-    GameOver    -> gameState
-    Victory     -> gameState
-    Ongoing 0   -> gameState
-    Wait n time -> if time > 0
-                   then gameState
+    GameOver  -> gameState
+    Victory   -> gameState
+    Ongoing 0 -> gameState
+    Wait n t  -> if t > 0
+                   then { gameState | status <- Wait n (t - time) }
                    else
                         let (i, s') = Random.generate (Random.int 1 999) gameState.seed
                         in { gameState | game <- Game.defaultGame i
@@ -94,10 +89,9 @@ stepGame input gameState =
                                        , status <- Ongoing (n-1) }
 
     Ongoing n -> case gameState.game.status of
-        Game.Ongoing  -> { gameState | game = Game.stepGame input gameState.game }
-        Game.GameOver -> { gameState | status = GameOver }
-        Game.Victory  -> { gameState | status = Wait n (Time.second * 2) }
-
+        Game.Ongoing  -> { gameState | game <- Game.stepGame input gameState.game }
+        Game.GameOver -> { gameState | status <- GameOver }
+        Game.Victory  -> { gameState | status <- Wait n (Time.second * 1) }
 
 
 {-- Part 4: Display the game --------------------------------------------------
@@ -112,5 +106,6 @@ display (w,h) gameState =
       halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.game.map
   in
      Element.container w h Element.middle <|
-     Game.display gameState.game
+        uncurry Collage.collage size <|
+        [Collage.toForm <| Game.display gameState.game]
 

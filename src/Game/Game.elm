@@ -79,21 +79,6 @@ defaultGame s =
     , map    = map
     , form   = form }
 
-defaultGuards =
-  [defaultGuard (Utils.scale 5, Utils.scale 7) 54546
-  ,defaultGuard (Utils.scale 15, Utils.scale 8) 3654141
-  ,defaultGuard (Utils.scale 18, Utils.scale 8) 365141
-  ,defaultGuard (Utils.scale 14, Utils.scale 8) 365141214
-  ,defaultGuard (Utils.scale 6, Utils.scale 1) 751351
-  ,defaultGuard (Utils.scale 21, Utils.scale 15) 3811
-  ,defaultGuard (Utils.scale 15, Utils.scale 8) 35454
-  ,defaultGuard (Utils.scale 14, Utils.scale 8) 32221
-  ,defaultGuard (Utils.scale 15, Utils.scale 12) 311
-  ,defaultGuard (Utils.scale 14, Utils.scale 14) 3331
-  ,defaultGuard (Utils.scale 9, Utils.scale 9) 272621
-  ,defaultGuard (Utils.scale 21, Utils.scale 12) 3862
-  ]
-
 createGuards : List (Int,Int) -> Random.Seed -> (List Guard.Guard, Random.Seed)
 createGuards list seed =
   case list of
@@ -175,13 +160,11 @@ How should the GameState be displayed to the user?
 
 ------------------------------------------------------------------------------}
 
-display : (Int,Int) -> GameState -> Element.Element
-display (w,h) gameState =
+display : GameState -> Element.Element
+display gameState =
   let size     = Utils.apply2 ((+) 20 << truncate) <| WorldMap.scaledSize gameState.map
       halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.map
   in
-     Element.container w h Element.middle <|
-
         uncurry Collage.collage size <|
           [WorldMap.display gameState.map gameState.form
           ,Collage.move halfSize <| displayGoal gameState.goal
