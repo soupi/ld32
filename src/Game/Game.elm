@@ -43,15 +43,6 @@ What information do you need to represent all relevant user input?
 ------------------------------------------------------------------------------}
 
 
-main : Signal.Signal Element.Element
-main =
-    Signal.map2 display Window.dimensions gameState
-
-
-gameState : Signal.Signal GameState
-gameState =
-    Signal.foldp stepGame defaultGame Input.input
-
 
 
 {-- Part 2: Model the game ----------------------------------------------------
@@ -74,9 +65,9 @@ type alias GameState =
   , form   : Collage.Form
   }
 
-defaultGame : GameState
-defaultGame =
-  let (map, form, (p1,p2)::rest, seed) = WorldMap.create 25 20 91256
+defaultGame : Int -> GameState
+defaultGame s =
+  let (map, form, (p1,p2)::rest, seed) = WorldMap.create 25 20 s
       (b1,b2) = List.head <| List.reverse rest
       (myGuards, seed') = createGuards rest seed
   in
