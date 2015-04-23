@@ -42,51 +42,91 @@ How do we use the model?
 
 ------------------------------------------------------------------------------}
 
-create : Int -> Int -> Int -> (WorldMap, Collage.Form)
+create : Int -> Int -> Int -> (WorldMap, Collage.Form, List (Int, Int), Random.Seed)
 create w h seed =
-  let (map,_)  = createMaze (0,w-1) (0, h-1) (Random.initialSeed seed) (Array2D.repeat w h False) 2
-      form     = worldMapForm map
+  let (map, list, seed')  = createMaze (0,w-1) (0, h-1) (-1, -1) (Random.initialSeed seed) (Array2D.repeat w h False) 2
+      form          = worldMapForm map
   in
-     (map, form)
+     (map, form, list, seed')
 
 
-
-createMaze : (Int, Int) -> (Int, Int) -> Random.Seed -> WorldMap -> Int -> (WorldMap, Random.Seed)
-createMaze (lw',hw') (lh',hh') seed map maxD =
-  let (lw,hw,lh,hh) = (lw' + 0, hw' - 0, lh' + 0, hh' - 0)
-      _ = Debug.log "values" (lw,hw,lh,hh)
+retryIfEquals : a -> Random.Generator a -> Random.Seed -> (a, Random.Seed)
+retryIfEquals x gen seed =
+  let (y,seed') = Random.generate gen seed
   in
-  if lw >= hw || lh >= hh || maxD == 0
-  then (map, seed)
+     if x /= y then (y,seed') else retryIfEquals x gen seed'
+
+createMaze : (Int, Int) -> (Int, Int) -> (Int, Int) -> Random.Seed -> WorldMap -> Int -> (WorldMap, List (Int, Int), Random.Seed)
+createMaze (lw,hw) (lh,hh) (rowHole, colHole) seed map maxDepth =
+  let _ = Debug.log "size" (lw,hw,lh,hh)
+  in
+  if lw+3 >= hw || lh+3 >= hh || maxDepth == 0
+  then (map, [(lw+1, lh+1)], seed)
   else
-    let (row,seed')     = Random.generate (Random.int (lw+1) (hw+1)) seed
-        (col,seed'')    = Random.generate (Random.int (lh+1) (hh-1)) seed'
-        (cdiv,seed''')  = Random.generate (Random.int (lh+1) (hh-1)) seed''
-        (rdiv1,seed'''') = Random.generate (Random.int (lw+1) (row-1)) seed'''
-        (rdiv2,seed''''') = Random.generate (Random.int (row+1) (hw-1)) seed''''
-        divRow          = fillRowWithWallExcept row lh hh cdiv map
-        dividedMaze     = fillColWithWallExcept col lw hw rdiv1 rdiv2 divRow
-        (maze1,s1) = createMaze (lw, row - 1) (lh, col - 1) seed'''' dividedMaze (maxD - 1)
-        (maze2,s2) = createMaze (lw, row - 1) (col + 1, hh) s1 maze1 (maxD - 1)
-        (maze3,s3) = createMaze (row + 1, hw) (lh, col - 1) s2 maze2 (maxD - 1)
-        maze       = createMaze (row + 1, hw) (col + 1, hh) s3 maze3 (maxD - 1)
+    let (row,seed')     = retryIfEquals colHole (Random.int (lw+2) (hw-2)) seed
+        (col,seed'')    = retryIfEquals rowHole (Random.int (lh+2) (hh-2)) seed'
+        (cdiv,seed''')  = retryIfEquals col (Random.int (lh+3) (hh-3)) seed''
+        (rdiv1,seed4)   = retryIfEquals row (Random.int (lw+3) (row-3)) seed'''
+        (rdiv2,seed5)   = retryIfEquals row (Random.int (row+3) (hw-3)) seed4
+        divRow          = fillRowWithWallExcept row lh hh col cdiv seed5 map
+        dividedMaze     = fillColWithWallExcept col lw hw row rdiv1 rdiv2 seed5 divRow
+        (maze1, l1, s1) = createMaze (lw, row-1) (lh, col-1) (cdiv, rdiv1) seed5 dividedMaze (maxDepth - 1)
+        (maze2, l2, s2) = createMaze (lw, row-1) (col+1, hh) (cdiv, rdiv1) s1 maze1 (maxDepth - 1)
+        (maze3, l3, s3) = createMaze (row+1, hw) (lh, col-1) (cdiv, rdiv2) s2 maze2 (maxDepth - 1)
+        (maze , l4, s4) = createMaze (row+1, hw) (col+1, hh) (cdiv, rdiv2) s3 maze3 (maxDepth - 1)
     in
-       maze
+        (maze, l1 ++ l2 ++ l3 ++ l4, s4)
 
 
-fillRowWithWallExcept : Int -> Int -> Int -> Int -> WorldMap -> WorldMap
-fillRowWithWallExcept row c1 c2 except map =
-  if | c1 > c2      -> map
-     | c1 == except -> fillRowWithWallExcept row (c1+1) c2 except map
-     | otherwise    -> fillRowWithWallExcept row (c1+1) c2 except <|
+fillRowWithWallExceptLogic : Int -> Int -> Int -> Int -> Bool -> WorldMap -> (WorldMap, Bool)
+fillRowWithWallExceptLogic row c1 c2 except success map =
+  if | c1 > c2      -> (map, success)
+     | c1 == except -> if Maybe.withDefault True (Array2D.get (row-1) c1 map) == False &&
+                          Maybe.withDefault True (Array2D.get (row+1) c1 map) == False
+                       then
+                          fillRowWithWallExceptLogic row (c1+1) c2 except True map
+                       else
+                          fillRowWithWallExceptLogic row (c1+1) c2 (c1+1) False <|
+                          Array2D.set row c1 True map
+     | otherwise    -> fillRowWithWallExceptLogic row (c1+1) c2 except success <|
                     Array2D.set row c1 True map
 
-fillColWithWallExcept : Int -> Int -> Int -> Int -> Int -> WorldMap -> WorldMap
-fillColWithWallExcept col r1 r2 except1 except2 map =
-  if | r1 > r2      -> map
-     | r1 == except1 || r1 == except2 -> fillColWithWallExcept col (r1+1) r2 except1 except2 map
-     | otherwise    -> fillColWithWallExcept col (r1+1) r2 except1 except2 <|
-                    Array2D.set r1 col True map
+
+fillRowWithWallExcept col start end div except seed map =
+  let (maze, _)  = fillWithWallExceptRand fillRowWithWallExceptLogic col start end except seed  map
+  in
+     maze
+
+fillColWithWallExcept : Int -> Int -> Int -> Int -> Int -> Int -> Random.Seed -> WorldMap -> WorldMap
+fillColWithWallExcept col start end div except1 except2 seed map =
+  let (maze1, seed')  = fillWithWallExceptRand fillColWithWallExceptLogic col start div except1 seed  map
+      (maze2, seed'') = fillWithWallExceptRand fillColWithWallExceptLogic col div   end except2 seed' maze1
+  in
+     maze2
+
+fillWithWallExceptRand f col start end except seed map =
+  if   start == except
+  then (map, seed)
+  else
+    case f col start end except False map of
+       (newmaze, True)  -> (newmaze, seed)
+       (newmaze, False) -> let (newExcept, seed') = Random.generate (Random.int start (except-1)) seed
+                           in
+                               fillWithWallExceptRand f col start end newExcept seed' map
+
+
+fillColWithWallExceptLogic : Int -> Int -> Int -> Int -> Bool -> WorldMap -> (WorldMap, Bool)
+fillColWithWallExceptLogic col start end except success map =
+  if | start > end     -> (map, success)
+     | start == except -> if   Maybe.withDefault True (Array2D.get start (col-1) map) == False &&
+                               Maybe.withDefault True (Array2D.get start (col+1) map) == False
+                          then
+                               fillColWithWallExceptLogic col (start+1) end except True map
+                          else
+                               fillColWithWallExceptLogic col (start+1) end (except+1) success <|
+                               Array2D.set start col True map
+     | otherwise       -> fillColWithWallExceptLogic col (start+1) end except success <|
+                          Array2D.set start col True map
 
 
 get : Int -> Int -> WorldMap -> Maybe Bool

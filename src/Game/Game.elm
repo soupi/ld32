@@ -17,6 +17,7 @@ import Window
 import Signal
 import Text
 import List
+import Random
 
 -- Game
 import Game.WorldMap as WorldMap
@@ -75,23 +76,46 @@ type alias GameState =
 
 defaultGame : GameState
 defaultGame =
-  let (map, form) = WorldMap.create 20 15 9
+  let (map, form, (p1,p2)::rest, seed) = WorldMap.create 25 20 91256
+      (b1,b2) = List.head <| List.reverse rest
+      (myGuards, seed') = createGuards rest seed
   in
-    { player = ({ defaultPlayer | x <- Utils.scale 2, y <- Utils.scale 12 })
+    { player = ({ defaultPlayer | x <- Utils.scale p1, y <- Utils.scale p2 })
     , banana = Nothing
-    , guards = defaultGuards
-    , goal   = { x = 19 * Utils.squareSize, y = 11 * (Utils.squareSize) }
+    , guards = myGuards
+    , goal   = { x = Utils.scale b1, y = Utils.scale b2 }
     , status = Ongoing
     , map    = map
     , form   = form }
 
 defaultGuards =
-  [defaultGuard (Utils.scale 3, Utils.scale 5) 5
-  ,defaultGuard (Utils.scale 14, Utils.scale 6) 3
-  ,defaultGuard (Utils.scale 9, Utils.scale 9) 27
-  ,defaultGuard (Utils.scale 19, Utils.scale 2) 38
+  [defaultGuard (Utils.scale 5, Utils.scale 7) 54546
+  ,defaultGuard (Utils.scale 15, Utils.scale 8) 3654141
+  ,defaultGuard (Utils.scale 18, Utils.scale 8) 365141
+  ,defaultGuard (Utils.scale 14, Utils.scale 8) 365141214
+  ,defaultGuard (Utils.scale 6, Utils.scale 1) 751351
+  ,defaultGuard (Utils.scale 21, Utils.scale 15) 3811
+  ,defaultGuard (Utils.scale 15, Utils.scale 8) 35454
+  ,defaultGuard (Utils.scale 14, Utils.scale 8) 32221
+  ,defaultGuard (Utils.scale 15, Utils.scale 12) 311
+  ,defaultGuard (Utils.scale 14, Utils.scale 14) 3331
+  ,defaultGuard (Utils.scale 9, Utils.scale 9) 272621
+  ,defaultGuard (Utils.scale 21, Utils.scale 12) 3862
   ]
 
+createGuards : List (Int,Int) -> Random.Seed -> (List Guard.Guard, Random.Seed)
+createGuards list seed =
+  case list of
+    [] -> ([], seed)
+    x::xs -> let (g,s1) = createGuard x seed
+                 (g2,s2) = createGuard x s1
+                 (rest, s3) = createGuards xs s2
+             in  (g::g2::rest, s2)
+
+createGuard : (Int, Int) -> Random.Seed -> (Guard.Guard, Random.Seed)
+createGuard (x,y) seed =
+  let (i, seed') = Random.generate (Random.int Random.minInt Random.maxInt) seed
+  in  (defaultGuard (Utils.scale x, Utils.scale y) i, seed')
 
 {-- Part 3: Update the game ---------------------------------------------------
 
@@ -162,7 +186,7 @@ How should the GameState be displayed to the user?
 
 display : (Int,Int) -> GameState -> Element.Element
 display (w,h) gameState =
-  let size     = Utils.apply2 truncate <| WorldMap.scaledSize gameState.map
+  let size     = Utils.apply2 ((+) 20 << truncate) <| WorldMap.scaledSize gameState.map
       halfSize = Utils.apply2 ((-) 0 << (\v -> v / 2)) <| WorldMap.scaledSize gameState.map
   in
      Element.container w h Element.middle <|

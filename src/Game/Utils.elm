@@ -4,7 +4,7 @@ changeIf : (a -> Bool) -> a -> a -> a
 changeIf test def x = if test x then def else x
 
 
-squareSize = 48
+squareSize = 44
 
 
 apply2 : (a -> b) -> (a, a) -> (b, b)
@@ -52,11 +52,11 @@ type alias Bounds = { upperLeft  : Point
 
 bounds : Float -> Float -> Point -> Bounds
 bounds w h center =
-  let (halfW, halfH) = (w / 2, h / 2)
-      upperLeft  = { x = center.x - halfW, y = center.y + halfH }
-      upperRight = { x = center.x + halfW, y = center.y + halfH }
-      lowerLeft  = { x = center.x - halfW, y = center.y - halfH }
-      lowerRight = { x = center.x + halfW, y = center.y - halfH }
+  let (halfW, halfH) = (w / 4, h / 2)
+      upperLeft  = { x = center.x - (halfW/1.1), y = center.y + (halfH/2) }
+      upperRight = { x = center.x + (halfW/1.1), y = center.y + (halfH/2) }
+      lowerLeft  = { x = center.x - (halfW/1.1), y = center.y - (halfH/1.1) }
+      lowerRight = { x = center.x + (halfW/1.1), y = center.y - (halfH/1.1) }
   in
      { upperLeft  = upperLeft
      , upperRight = upperRight
@@ -64,6 +64,6 @@ bounds w h center =
      , lowerRight = lowerRight }
 
 squareBounds : Point -> Bounds
-squareBounds = bounds (squareSize-4) (squareSize-6)
+squareBounds = bounds (squareSize-2) (squareSize-2)
 
 
