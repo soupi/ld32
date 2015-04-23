@@ -82,16 +82,18 @@ stepGame ({time} as input) gameState =
     Ongoing 0 -> gameState
     Wait n t  -> if t > 0
                    then { gameState | status <- Wait n (t - time) }
-                   else
-                        let (i, s') = Random.generate (Random.int 1 999) gameState.seed
-                        in { gameState | game <- Game.defaultGame i
-                                       , seed <- s'
-                                       , status <- Ongoing (n-1) }
+                   else if n <= 0
+                        then { gameState | status <- Victory }
+                        else
+                             let (i, s') = Random.generate (Random.int 1 999) gameState.seed
+                             in { gameState | game <- Game.defaultGame i
+                                            , seed <- s'
+                                            , status <- Ongoing (n-1) }
 
     Ongoing n -> case gameState.game.status of
         Game.Ongoing  -> { gameState | game <- Game.stepGame input gameState.game }
         Game.GameOver -> { gameState | status <- GameOver }
-        Game.Victory  -> { gameState | status <- Wait n (Time.second * 1) }
+        Game.Victory  -> { gameState | status <- Wait n (Time.second * 1.5) }
 
 
 {-- Part 4: Display the game --------------------------------------------------
