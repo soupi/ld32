@@ -10,6 +10,8 @@ for compo/jam entry respectively to complete and publish a game based on the the
 
 This weekend [LD32][ld32] took place, and I decided to participate while using [Elm][] to build my game - [Banana Bandit][mygame] (source on [github][]).
 
+Edit: [post-jam updates](updates)
+
 Since I didn't have a lot of Elm experience (I wrote at most 100 LOC in it) prior to jam,
 I decided that my goal is to learn Elm, FRP and a new way to model games on the fly, during the jam,
 and gain real experience working with it,
@@ -71,6 +73,7 @@ Second set of problems: working with Elm was not without problems.
 - Integrating audio (didn't find the [elm-audio][] package on package.elm-lang.org) though I recorded some music and sfx.
 - Fixing the maze generator -> many levels
 - Score, lives and such
+- More levels
 - Screens
 
 ### Conclusion
@@ -102,3 +105,4 @@ Thanks for reading!
 [elm-audio]: https://github.com/jcollard/elm-audio
 [mygame]: http://ludumdare.com/compo/ludum-dare-32/?action=preview&uid=29243
 [github]: https://github.com/soupi/ld32
+[updates]: http://www.gilmi.xyz/static/misc/gamejams/ld32/Game/dist/update.html
