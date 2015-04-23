@@ -10,7 +10,7 @@ for compo/jam entry respectively to complete and publish a game based on the the
 
 This weekend [LD32][ld32] took place, and I decided to participate while using [Elm][] to build my game - [Banana Bandit][mygame] (source on [github][]).
 
-Edit: [post-jam updates](updates)
+Edit: [post-jam updates][updates]
 
 Since I didn't have a lot of Elm experience (I wrote at most 100 LOC in it) prior to jam,
 I decided that my goal is to learn Elm, FRP and a new way to model games on the fly, during the jam,
