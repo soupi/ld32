@@ -82,7 +82,7 @@ stepGame ({time} as input) gameState =
     Ongoing 0 -> gameState
     Wait n t  -> if t > 0
                    then { gameState | status <- Wait n (t - time) }
-                   else if n <= 0
+                   else if n-1 <= 0
                         then { gameState | status <- Victory }
                         else
                              let (i, s') = Random.generate (Random.int 1 999) gameState.seed
