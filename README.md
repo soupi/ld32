@@ -18,5 +18,5 @@ My entry for [Ludum Dare][ld] [32][ld32].
 [mygame]: http://ludumdare.com/compo/ludum-dare-32/?action=preview&uid=29243
 [update-source]: https://github.com/soupi/ld32/tree/master
 [updates]: http://www.gilmi.xyz/static/misc/gamejams/ld32/Game/dist/update.html
-[post-mortem][http://www.gilmi.xyz/post/2015/04/21/weekend-with-elm]
+[post-mortem]: http://www.gilmi.xyz/post/2015/04/21/weekend-with-elm
 
