@@ -61,7 +61,7 @@ How should the Banana be displayed to the user?
 
 ------------------------------------------------------------------------------}
 
-bananaText = Collage.move (120,20) <| Collage.toForm <| Text.centered <| Text.color Color.yellow <| Text.fromString "press Z to drop and pick-up the banana"
+bananaText = Collage.move (120,20) <| Collage.toForm <| Element.centered <| Text.color Color.yellow <| Text.fromString "press Z to drop and pick-up the banana"
 
 display : Banana -> Collage.Form
 display banana = case banana of

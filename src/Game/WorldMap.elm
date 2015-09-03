@@ -17,7 +17,7 @@ import Color
 import Maybe
 
 -- Packages
-import Array2D
+import Matrix
 
 -- Game
 import Game.Input  as Input
@@ -33,7 +33,7 @@ What information do you need to represent an Object?
 
 ------------------------------------------------------------------------------}
 
-type alias WorldMap = Array2D.Array2D Bool
+type alias WorldMap = Matrix.Matrix Bool
 
 
 {-- Functions ----------------------------------------------------------------
@@ -44,7 +44,7 @@ How do we use the model?
 
 create : Int -> Int -> Int -> (WorldMap, Collage.Form, List (Int, Int), Random.Seed)
 create w h seed =
-  let (map, list, seed')  = createMaze (0,w-1) (0, h-1) (-1, -1) (Random.initialSeed seed) (Array2D.repeat w h False) 2
+  let (map, list, seed')  = createMaze (0,w-1) (0, h-1) (-1, -1) (Random.initialSeed seed) (Matrix.repeat w h False) 2
       form          = worldMapForm map
   in
      (map, form, list, seed')
@@ -81,15 +81,15 @@ createMaze (lw,hw) (lh,hh) (rowHole, colHole) seed map maxDepth =
 fillRowWithWallExceptLogic : Int -> Int -> Int -> Int -> Bool -> WorldMap -> (WorldMap, Bool)
 fillRowWithWallExceptLogic row c1 c2 except success map =
   if | c1 > c2      -> (map, success)
-     | c1 == except -> if Maybe.withDefault True (Array2D.get (row-1) c1 map) == False &&
-                          Maybe.withDefault True (Array2D.get (row+1) c1 map) == False
+     | c1 == except -> if Maybe.withDefault True (Matrix.get (row-1) c1 map) == False &&
+                          Maybe.withDefault True (Matrix.get (row+1) c1 map) == False
                        then
                           fillRowWithWallExceptLogic row (c1+1) c2 except True map
                        else
                           fillRowWithWallExceptLogic row (c1+1) c2 (c1+1) False <|
-                          Array2D.set row c1 True map
+                          Matrix.set row c1 True map
      | otherwise    -> fillRowWithWallExceptLogic row (c1+1) c2 except success <|
-                    Array2D.set row c1 True map
+                    Matrix.set row c1 True map
 
 
 fillRowWithWallExcept col start end div except seed map =
@@ -118,19 +118,19 @@ fillWithWallExceptRand f col start end except seed map =
 fillColWithWallExceptLogic : Int -> Int -> Int -> Int -> Bool -> WorldMap -> (WorldMap, Bool)
 fillColWithWallExceptLogic col start end except success map =
   if | start > end     -> (map, success)
-     | start == except -> if   Maybe.withDefault True (Array2D.get start (col-1) map) == False &&
-                               Maybe.withDefault True (Array2D.get start (col+1) map) == False
+     | start == except -> if   Maybe.withDefault True (Matrix.get start (col-1) map) == False &&
+                               Maybe.withDefault True (Matrix.get start (col+1) map) == False
                           then
                                fillColWithWallExceptLogic col (start+1) end except True map
                           else
                                fillColWithWallExceptLogic col (start+1) end (except+1) success <|
-                               Array2D.set start col True map
+                               Matrix.set start col True map
      | otherwise       -> fillColWithWallExceptLogic col (start+1) end except success <|
-                          Array2D.set start col True map
+                          Matrix.set start col True map
 
 
 get : Int -> Int -> WorldMap -> Maybe Bool
-get = Array2D.get
+get = Matrix.get
 
 isEmptyRowFromTo : Int -> Int -> Int -> WorldMap -> Bool
 isEmptyRowFromTo row c1 c2 map =
@@ -158,16 +158,18 @@ isValidObjectLocation map obj = Object.checkBounds (isValidStep map << Utils.uns
 
 
 size : WorldMap -> (Int, Int)
-size map = if Array2D.length map == 0 then (0, 0)
-                                      else (Array2D.length1 map, Array2D.length map // Array2D.length1 map)
+size = Matrix.size
 
 scaledSize : WorldMap -> (Float, Float)
 scaledSize map = (Utils.apply2 Utils.scale (size map))
 
 
-worldMapForm map = Collage.toForm <|
-  uncurry Collage.collage (Utils.apply2 truncate <| scaledSize map) <|
-  Array2D.toList (Array2D.indexedMap (wallOrEmpty (Utils.apply2 (flip (/) 2) <| scaledSize map)) map)
+worldMapForm map =
+  Collage.toForm
+  <| uncurry Collage.collage (Utils.apply2 truncate
+  <| scaledSize map)
+  <| List.concat
+  <| Matrix.toList (Matrix.indexedMap (wallOrEmpty (Utils.apply2 (flip (/) 2) <| scaledSize map)) map)
 
 
 

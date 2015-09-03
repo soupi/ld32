@@ -12,7 +12,7 @@ module Game.Guard where
 -- Packages
 import Graphics.Element as Element
 import Graphics.Collage as Collage
-import Graphics.Collage (rect, filled, outlined)
+import Graphics.Collage exposing (rect, filled, outlined)
 import Color
 import Time
 import Random

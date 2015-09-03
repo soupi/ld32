@@ -9,13 +9,10 @@
 
 module Game.Object where
 
--- Packages
-import Graphics.Element (..)
-
 -- Game
 import Game.Input as Input
 import Game.Utils as Utils
-import Game.Utils (changeIf)
+import Game.Utils exposing (changeIf)
 
 -- Debug
 import Debug

@@ -29,8 +29,8 @@ import Game.Utils    as Utils
 import Game.Input    as Input
 import Game.Maybe    as Maybe
 
-import Game.Player (defaultPlayer)
-import Game.Guard  (defaultGuard)
+import Game.Player exposing (defaultPlayer)
+import Game.Guard  exposing (defaultGuard)
 
 -- Debug
 import Debug
@@ -68,7 +68,7 @@ type alias GameState =
 defaultGame : Int -> GameState
 defaultGame s =
   let (map, form, (p1,p2)::rest, seed) = WorldMap.create 25 20 s
-      (b1,b2) = List.head <| List.reverse rest
+      (Just (b1,b2)) = List.head <| List.reverse rest
       (myGuards, seed') = createGuards rest seed
   in
     { player = ({ defaultPlayer | x <- Utils.scale p1, y <- Utils.scale p2 })
@@ -184,5 +184,5 @@ displayGoal goal =
 displayStatus status = Collage.toForm <|
   case status of
     Ongoing  -> Element.empty
-    Victory  -> Text.centered <| Text.color Color.yellow <| Text.fromString "Victory!"
-    GameOver -> Text.centered <| Text.color Color.red    <| Text.fromString "GAME OVER"
+    Victory  -> Element.centered <| Text.color Color.yellow <| Text.fromString "Victory!"
+    GameOver -> Element.centered <| Text.color Color.red    <| Text.fromString "GAME OVER"

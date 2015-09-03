@@ -1,15 +1,16 @@
 {
     "version": "1.0.0",
-    "summary": "LD32 entry by suppi",
-    "repository": "https://github.com/USER/PROJECT.git",
+    "summary": "LD32 jam entry by suppi",
+    "repository": "https://github.com/suppi/ld32.git",
     "license": "Apache 2.0",
     "source-directories": [
         "src"
     ],
     "exposed-modules": [],
     "dependencies": {
-        "elm-lang/core": "1.1.1 <= v < 2.0.0"
-       ,"jwmerrill/elm-animation-frame": "1.0.2 <= v < 2.0.0"
-       ,"jheiling/elm-Array2D": "1.0.0 <= v < 2.0.0"
-    }
+        "elm-lang/core": "2.1.0 <= v < 3.0.0"
+       ,"jwmerrill/elm-animation-frame": "1.0.3 <= v < 2.0.0"
+       ,"sindikat/elm-matrix": "1.2.0 <= v < 2.0.0"
+    },
+    "elm-version": "0.15.1 <= v < 0.16.0"
 }

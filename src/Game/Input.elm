@@ -6,12 +6,11 @@
 
 module Game.Input where
 
-import Graphics.Element (..)
 import AnimationFrame
 import Time
 import Window
 import Signal
-import Signal ((<~),(~))
+import Signal exposing ((<~),(~))
 import Keyboard
 import Char
 
